@@ -1,0 +1,58 @@
+
+
+
+
+use crate::Sprite;
+
+pub enum SpriteList {
+    #[allow(non_camel_case_types)]
+    bullet1,
+    #[allow(non_camel_case_types)]
+    bullet2,
+    #[allow(non_camel_case_types)]
+    bullet3,
+    #[allow(non_camel_case_types)]
+    bullet4,
+    #[allow(non_camel_case_types)]
+    ship,
+}
+
+impl SpriteList {
+    pub fn get(self) -> Sprite {
+        use SpriteList::*;
+        match self {
+            bullet1 => Sprite {
+                width: 4,
+                height: 4,
+                flags: 1,
+                data: vec![ 0x10,0x68,0xa4,0x20 ],
+            },
+            bullet2 => Sprite {
+                width: 4,
+                height: 4,
+                flags: 1,
+                data: vec![ 0x10,0x58,0xa4,0x28 ],
+            },
+            bullet3 => Sprite {
+                width: 4,
+                height: 4,
+                flags: 1,
+                data: vec![ 0x10,0x59,0x26,0x28 ],
+            },
+            bullet4 => Sprite {
+                width: 4,
+                height: 4,
+                flags: 1,
+                data: vec![ 0x10,0x98,0x14,0x28 ],
+            },
+            ship => Sprite {
+                width: 16,
+                height: 16,
+                flags: 1,
+                data: vec![ 0x00,0x01,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x05,0x80,0x00,0x00,0x05,0x80,0x00,0x00,0x15,0xa0,0x00,0x00,0x16,0xa0,0x00,0x00,0x56,0xa8,0x00,0x00,0x55,0xa8,0x00,0x00,0x55,0xa8,0x00,0x01,0x55,0xaa,0x00,0x05,0x56,0x6a,0x80,0x15,0x99,0xab,0xb0,0x56,0x66,0x6e,0xec,0x58,0x09,0x80,0xbc,0x60,0x00,0x00,0x3c ],
+            },
+        }
+    }
+}
+
+
