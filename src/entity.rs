@@ -27,8 +27,6 @@ pub trait Entity {
         if self.x_pos() < 0.0 { *self.x_pos_mut() += 160.0 }
 
         *self.y_pos_mut() += self.y_vel();
-        if self.y_pos() > 160.0 - self.sprite().height as f32 { *self.y_pos_mut() = 160.0 - self.sprite().height as f32 }
-        if self.y_pos() < 0.0 { *self.y_pos_mut() += 160.0 }
     }
 
     /// The left most pixel of the entity
@@ -54,7 +52,7 @@ pub trait Entity {
     /// Returns if the sprite would not be rendered at all
     /// if attempted to draw.
     fn off_screen(&self) -> bool {
-        false
+        self.bottom() < 0 || self.top() > 160 || self.left() > 160 || self.right() < 0
     }
 
     /// Renders the entity's sprite at its integral position.

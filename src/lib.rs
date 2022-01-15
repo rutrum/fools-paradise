@@ -84,6 +84,11 @@ impl Runtime for Game {
             bullet.draw();
         });
 
+        self.bullets = core::mem::take(&mut self.bullets)
+            .into_iter()
+            .filter(|b| !b.off_screen())
+            .collect();
+
         text(format!("{}", self.bullets.len()), 10, 10);
 
         player.update(self.frame);
