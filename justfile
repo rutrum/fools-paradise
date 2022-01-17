@@ -26,4 +26,4 @@ cart-size: release-build
     ls target/release.wasm -lh | cut -d' ' -f 5
 
 doc:
-    cargo doc
+    cargo doc --document-private-items

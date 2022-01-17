@@ -2,15 +2,14 @@
 mod alloc;
 mod wasm4;
 use wasm4::sys::*;
-use wasm4::runtime::*;
-pub use wasm4::controls::*;
+pub use wasm4::*;
 
-pub mod util;
-pub mod entity;
-use entity::*;
+mod util;
+mod entity;
+pub use entity::*;
 
 mod sprite;
-use sprite::*;
+pub use sprite::*;
 
 const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
