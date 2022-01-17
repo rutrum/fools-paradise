@@ -46,6 +46,7 @@ impl Alive for Enemy {
     }
 
     fn kill(&mut self) {
+        sound::enemy_death();
         self.state = EnemyState::Dying;
         self.death_counter += 1;
     }

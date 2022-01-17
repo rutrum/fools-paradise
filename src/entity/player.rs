@@ -74,6 +74,7 @@ impl Alive for Player {
     }
 
     fn kill(&mut self) {
+        sound::player_death();
         self.state = PlayerState::Dying;
     }
 }
