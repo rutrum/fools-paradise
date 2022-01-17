@@ -14,7 +14,7 @@ bundle: release-build
 
 watch:
     w4 watch --no-qr &
-    watchexec -cr -d 0 -i src/sprite_consts.rs -- just img
+    watchexec -cr -d 0 -i src/sprite/sprite_list.rs -- just img
 
 tree:
     tree -I "target|out"
@@ -24,3 +24,6 @@ img:
 
 cart-size: release-build
     ls target/release.wasm -lh | cut -d' ' -f 5
+
+doc:
+    cargo doc

@@ -1,6 +1,5 @@
-use crate::entity::{Entity, Shoot, Alive};
-use crate::sprite::Sprite;
-use crate::bullet::Bullet;
+use super::*;
+use crate::Sprite;
 use crate::SpriteList;
 
 const TURN_FRAMES: i32 = 15;

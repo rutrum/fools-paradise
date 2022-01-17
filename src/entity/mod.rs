@@ -1,7 +1,15 @@
-use crate::sprite::Sprite;
+use crate::Sprite;
 use crate::wasm4::sys::*;
-use crate::Bullet;
 use crate::util;
+
+mod player;
+pub use player::Player;
+
+mod bullet;
+pub use bullet::Bullet;
+
+mod enemy;
+pub use enemy::Enemy;
 
 pub trait Shoot {
     fn shoot(&mut self) -> Bullet;
@@ -20,23 +28,29 @@ pub trait Alive {
 
 pub trait Entity {
 
+    /// Get the true x position.
     fn x_pos(&self) -> f32;
+    /// Get the true y position.
     fn y_pos(&self) -> f32;
 
+    /// Mutable reference to the true x position.
     fn x_pos_mut(&mut self) -> &mut f32;
+    /// Mutable reference to the true y position.
     fn y_pos_mut(&mut self) -> &mut f32;
 
+    /// Get the x velocity.
     fn x_vel(&self) -> f32;
+    /// Get the y velocity.
     fn y_vel(&self) -> f32;
 
-    /// Get the current sprite
+    /// Get the current sprite.
     fn sprite(&self) -> &Sprite;
 
     /// Called every frame to update.
     fn update(&mut self, frame: u32);
 
-    /// Adjusts the position based on the velocity.  This also accounts for wrapping
-    /// around the screen.
+    /// Adjusts the position based on the velocity.  Ensures that the x position
+    /// doesn't go outside left and right walls of screen.
     fn advance(&mut self) {
         *self.x_pos_mut() += self.x_vel();
         if self.x_pos() > 160.0 { *self.x_pos_mut() = 160.0 }
@@ -45,22 +59,22 @@ pub trait Entity {
         *self.y_pos_mut() += self.y_vel();
     }
 
-    /// The left most pixel of the entity
+    /// The left most pixel of the entity.
     fn left(&self) -> i32 {
         self.x_pos() as i32 - self.sprite().width as i32 / 2
     }
 
-    /// The right most pixel of the entity
+    /// The right most pixel of the entity.
     fn right(&self) -> i32 {
         self.left() + self.sprite().width as i32
     }
 
-    /// The top most pixel of the entity
+    /// The top most pixel of the entity.
     fn top(&self) -> i32 {
         self.y_pos() as i32 - self.sprite().height as i32 / 2
     }
 
-    /// The bottom most pixel of the entity
+    /// The bottom most pixel of the entity.
     fn bottom(&self) -> i32 {
         self.top() + self.sprite().height as i32
     }
@@ -86,8 +100,9 @@ pub trait Entity {
         );
     }
 
-    /// Not perfect.  Doesn't account for when
-    /// graphic is across the screen (maybe doesn't matter?)
+    /// Checks if the current entity collides with another entity.  This is
+    /// done by looping over the interesection in sprites and seeing if
+    /// there each sprite has a non-transparent pixel in the same location.
     fn collides_with<T: Entity>(&self, other: &T) -> bool {
         let x_overlap = util::range_intersection(
             self.left(), self.right(),

@@ -8,18 +8,9 @@ pub use wasm4::controls::*;
 pub mod util;
 pub mod entity;
 use entity::*;
+
 mod sprite;
 use sprite::*;
-
-mod sprite_consts;
-use sprite_consts::SpriteList;
-
-pub mod player;
-use player::*;
-pub mod bullet;
-use bullet::*;
-pub mod enemy;
-use enemy::*;
 
 const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
@@ -106,7 +97,6 @@ fn menu_update(game: &mut Game) {
     }
 
     if game.controls.pressed(Button::Primary) {
-        trace("test");
         game.state = GameState::Playing;
     }
 }
@@ -114,11 +104,17 @@ fn menu_update(game: &mut Game) {
 fn gameplay_update(game: &mut Game) {
     if game.player.alive() {
         controls_update(game);
-        text(game.score().to_string(), 0, 0);
+        unsafe {
+            *DRAW_COLORS = 0x02; // backwards to indexed colors
+        }
+        text(game.score().to_string(), 1, 1);
         game.frame += 1;
     } else {
-        text("Final score:", 40, 80);
-        text(game.score().to_string(), 40, 90);
+        unsafe {
+            *DRAW_COLORS = 0x03; // backwards to indexed colors
+        }
+        text("Final score:", 30, 50);
+        text(game.score().to_string(), 30, 60);
     }
 
 

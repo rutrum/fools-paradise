@@ -1,8 +1,5 @@
-use crate::entity::*;
-use crate::sprite::Sprite;
-use crate::bullet::Bullet;
+use super::*;
 use crate::SpriteList;
-use crate::wasm4::sys::*;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum EnemyState {
