@@ -1,5 +1,6 @@
 use super::*;
 use crate::SpriteList;
+use crate::sound;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum EnemyState {
@@ -52,6 +53,7 @@ impl Alive for Enemy {
 
 impl Shoot for Enemy {
     fn shoot(&mut self) -> Bullet {
+        sound::enemy_fire();
         self.fire_counter = 0;
         let mut bullet = Bullet::new((
             self.x_pos(),

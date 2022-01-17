@@ -1,6 +1,7 @@
 use super::*;
 use crate::Sprite;
 use crate::SpriteList;
+use crate::sound;
 
 const TURN_FRAMES: i32 = 15;
 
@@ -79,6 +80,7 @@ impl Alive for Player {
 
 impl Shoot for Player {
     fn shoot(&mut self) -> Bullet {
+        sound::player_fire();
         let mut bullet = Bullet::new((
             self.x_pos(),
             self.top() as f32,

@@ -11,6 +11,8 @@ pub use entity::*;
 mod sprite;
 pub use sprite::*;
 
+mod sound;
+
 const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
 enum GameState {
