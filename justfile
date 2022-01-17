@@ -7,12 +7,13 @@ default: watch
 release-build: img
     cargo build --release
     cp target/wasm32-unknown-unknown/release/{{cart-name}}.wasm target/release.wasm
-    wasm-snip --snip-rust-fmt-code --snip-rust-panicking-code -o target/release.wasm target/release.wasm
+    # wasm-snip --snip-rust-fmt-code --snip-rust-panicking-code -o target/release.wasm target/release.wasm
+    wasm-snip --snip-rust-panicking-code -o target/release.wasm target/release.wasm
     wasm-strip target/release.wasm
     wasm-opt -Oz --strip-producers --dce --zero-filled-memory -o target/release.wasm target/release.wasm
 
 bundle: release-build
-    w4 bundle target/release.wasm --html target/{{out-name}}.html
+    w4 bundle target/release.wasm --html target/{{out-name}}.html --windows target/{{out-name}}.exe --linux target/{{out-name}}.linux --mac target/{{out-name}}.mac --title "Fool's Paradise" --icon-file graphics/out/ship1.png
 
 watch:
     w4 watch --no-qr &
@@ -32,3 +33,6 @@ doc:
 
 clean:
     cargo clean
+
+linux: bundle
+    target/{{out-name}}.linux
