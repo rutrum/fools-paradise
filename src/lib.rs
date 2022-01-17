@@ -101,7 +101,7 @@ fn menu_update(game: &mut Game) {
     unsafe {
         *DRAW_COLORS = 0x03; // backwards to indexed colors
     }
-    text("Game Name!", 10, 10);
+    text("Fool's Paradise", 10, 10);
     text("Press action", 10, 130);
     text("button to start", 10, 140);
 

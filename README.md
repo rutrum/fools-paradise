@@ -1,5 +1,3 @@
-# Wasm4 Game Jam 2022
+# Fool's Paradise
 
-To do:
-
-* Polish?
+My submission for the WASM-4 Game Jam 2022.

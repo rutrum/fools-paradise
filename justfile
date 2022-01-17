@@ -1,4 +1,5 @@
 cart-name := "cart"
+out-name := "fools_paradise"
 sprite_out_file := "src/sprite/sprite_name.rs"
 
 default: watch
@@ -11,7 +12,7 @@ release-build: img
     wasm-opt -Oz --strip-producers --dce --zero-filled-memory -o target/release.wasm target/release.wasm
 
 bundle: release-build
-    w4 bundle target/release.wasm --html target/{{cart-name}}.html
+    w4 bundle target/release.wasm --html target/{{out-name}}.html
 
 watch:
     w4 watch --no-qr &
@@ -28,3 +29,6 @@ cart-size: release-build
 
 doc:
     cargo doc --document-private-items
+
+clean:
+    cargo clean
