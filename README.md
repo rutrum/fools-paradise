@@ -2,12 +2,9 @@
 
 To do:
 
-* Player/enemy collision
-* Enemies can shoot
 * Player explosion
 * Enemy explosion
-* Bullets disappear after collision
-* Menu screen
-* Death screen
-* Score
+* Audio for bullets and explosions
+* music? (at least on home screen)
+* randomize enemy appearance, scale with time
 * Polish?

@@ -4,7 +4,9 @@ use crate::Bullet;
 use crate::util;
 
 pub trait Shoot {
-    fn shoot(&self) -> Bullet;
+    fn shoot(&mut self) -> Bullet;
+
+    fn ready_to_shoot(&self) -> bool;
 }
 
 pub trait Alive {
@@ -37,8 +39,8 @@ pub trait Entity {
     /// around the screen.
     fn advance(&mut self) {
         *self.x_pos_mut() += self.x_vel();
-        if self.x_pos() > 160.0 { *self.x_pos_mut() -= 160.0 }
-        if self.x_pos() < 0.0 { *self.x_pos_mut() += 160.0 }
+        if self.x_pos() > 160.0 { *self.x_pos_mut() = 160.0 }
+        if self.x_pos() < 0.0 { *self.x_pos_mut() = 0.0 }
 
         *self.y_pos_mut() += self.y_vel();
     }
@@ -82,26 +84,6 @@ pub trait Entity {
             self.sprite().height, 
             self.sprite().flags
         );
-
-        if self.right() > 160 {
-            blit(
-                &self.sprite().data, 
-                self.left() - 160, 
-                self.top(), 
-                self.sprite().width, 
-                self.sprite().height, 
-                self.sprite().flags
-            );
-        } else if self.left() < 0 {
-            blit(
-                &self.sprite().data, 
-                self.left() + 160, 
-                self.top(), 
-                self.sprite().width, 
-                self.sprite().height, 
-                self.sprite().flags
-            );
-        }
     }
 
     /// Not perfect.  Doesn't account for when

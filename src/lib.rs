@@ -14,17 +14,18 @@ use sprite::*;
 mod sprite_consts;
 use sprite_consts::SpriteList;
 
-mod player;
+pub mod player;
 use player::*;
-mod bullet;
+pub mod bullet;
 use bullet::*;
-mod enemy;
+pub mod enemy;
 use enemy::*;
 
 const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
 enum GameState {
-    Playing
+    Menu,
+    Playing,
 }
 
 struct Game {
@@ -33,7 +34,30 @@ struct Game {
     player: Player,
     enemies: Vec<Enemy>,
     bullets: Vec<Bullet>,
+    enemy_bullets: Vec<Bullet>,
     frame: u32,
+}
+
+impl Game {
+    fn score(&self) -> u32 {
+        self.frame / 10
+    }
+
+    fn draw_entities(&self) {
+        if self.player.alive() {
+            self.player.draw();
+        }
+        self.enemies.iter().for_each(|e| e.draw());
+        self.bullets.iter().for_each(|e| e.draw());
+        self.enemy_bullets.iter().for_each(|e| e.draw());
+    }
+
+    fn update_entities(&mut self) {
+        self.player.update(self.frame);
+        self.enemies.iter_mut().for_each(|e| e.update(self.frame));
+        self.bullets.iter_mut().for_each(|e| e.update(self.frame));
+        self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
+    }
 }
 
 impl Runtime for Game {
@@ -43,77 +67,140 @@ impl Runtime for Game {
         }
 
         Game {
-            state: GameState::Playing,
+            state: GameState::Menu,
             controls: Controls::new(),
             bullets: Vec::new(),
             enemies: Vec::new(),
+            enemy_bullets: Vec::new(),
             player: Player::new(),
             frame: 0,
         }
     }
 
     fn update(&mut self) {
-        let mut player = &mut self.player;
-        
         self.controls.next();
 
-        if self.controls.pressed_or_held(Button::Left) {
-            player.move_left();
-        } else if self.controls.pressed_or_held(Button::Right) {
-            player.move_right();
-        } else {
-            player.vel.0 = 0.0;
+        use GameState::*;
+        match self.state {
+            Menu => menu_update(self),
+            Playing => gameplay_update(self),
+        }
+    }
+}
+
+fn menu_update(game: &mut Game) {
+    unsafe {
+        *DRAW_COLORS = 0x03; // backwards to indexed colors
+    }
+    text("Game Name!", 10, 10);
+    text("Press action", 10, 130);
+    text("button to start", 10, 140);
+
+    let s = SpriteList::enemy.get();
+
+    unsafe {
+        *DRAW_COLORS = 0x4320; // backwards to indexed colors
+    }
+    for (x, y) in [(20, 50), (100, 70), (130, 55), (55, 40), (45, 85)] {
+        blit(&s.data, x, y, s.width, s.height, s.flags);
+    }
+
+    if game.controls.pressed(Button::Primary) {
+        trace("test");
+        game.state = GameState::Playing;
+    }
+}
+
+fn gameplay_update(game: &mut Game) {
+    if game.player.alive() {
+        controls_update(game);
+        text(game.score().to_string(), 0, 0);
+        game.frame += 1;
+    } else {
+        text("Final score:", 40, 80);
+        text(game.score().to_string(), 40, 90);
+    }
+
+
+    // Update physics
+    game.update_entities();
+
+    // Check collisions and update
+    
+    for enemy in &mut game.enemies {
+        if enemy.ready_to_shoot() {
+            game.enemy_bullets.push(enemy.shoot());
         }
 
-        if self.controls.pressed_or_held(Button::Up) {
-            player.move_up();
-        } else if self.controls.pressed_or_held(Button::Down) {
-            player.move_down();
-        } else {
-            player.vel.1 = 0.0;
-        }
-
-        if self.controls.pressed(Button::Primary) {
-            self.bullets.push(player.shoot());
-        }
-
-        self.bullets.iter_mut().for_each(|bullet| {
-            bullet.update(self.frame);
-            bullet.draw();
-        });
-
-        self.bullets = core::mem::take(&mut self.bullets)
-            .into_iter()
-            .filter(|b| !b.off_screen())
-            .collect();
-
-        //text(format!("{}", self.bullets.len()), 10, 10);
-
-        player.update(self.frame);
-        player.draw();
-
-        self.enemies.iter_mut().for_each(|enemy| {
-            enemy.update(self.frame);
-            enemy.draw();
-            if self.bullets.iter().any(|bullet| {
-               enemy.collides_with(bullet)
-            }) {
+        for bullet in &mut game.bullets {
+            if enemy.collides_with(bullet) {
                 enemy.kill();
+                bullet.dead = true;
             }
-        });
-
-        self.enemies = core::mem::take(&mut self.enemies)
-            .into_iter()
-            .filter(|b| !b.off_screen() && !b.dead())
-            .collect();
-
-        self.frame += 1;
-
-        if self.frame % 100 == 30 {
-            let mut enemy = Enemy::new();
-            *enemy.x_pos_mut() = (self.frame % 57) as f32 * 3.0;
-            self.enemies.push(enemy);
         }
+
+        if game.player.alive() && enemy.collides_with(&game.player) {
+            game.player.kill();
+            enemy.kill();
+        }
+    }
+
+    if game.player.alive() {
+        for bullet in &mut game.enemy_bullets {
+            if game.player.collides_with(bullet) {
+                game.player.kill();
+                bullet.dead = true;
+            }
+        }
+    }
+
+    // garbage collection
+    game.enemies = core::mem::take(&mut game.enemies)
+        .into_iter()
+        .filter(|b| !b.off_screen() && !b.dead())
+        .collect();
+
+    game.bullets = core::mem::take(&mut game.bullets)
+        .into_iter()
+        .filter(|b| !b.off_screen() && !b.dead)
+        .collect();
+
+    game.enemy_bullets = core::mem::take(&mut game.enemy_bullets)
+        .into_iter()
+        .filter(|b| !b.off_screen() && !b.dead)
+        .collect();
+
+    // draw
+    game.draw_entities();
+
+    if game.frame % 100 == 30 {
+        let mut enemy = Enemy::new();
+        *enemy.x_pos_mut() = (game.frame % 57) as f32 * 3.0;
+        game.enemies.push(enemy);
+    }
+}
+
+fn controls_update(game: &mut Game) {
+    let mut player = &mut game.player;
+
+    if game.controls.pressed_or_held(Button::Left) {
+        player.move_left();
+    } else if game.controls.pressed_or_held(Button::Right) {
+        player.move_right();
+    } else {
+        player.vel.0 = 0.0;
+    }
+
+    if game.controls.pressed_or_held(Button::Up) {
+        player.move_up();
+    } else if game.controls.pressed_or_held(Button::Down) {
+        player.move_down();
+    } else {
+        player.vel.1 = 0.0;
+    }
+
+    if game.controls.pressed(Button::Primary) {
+        game.bullets.push(player.shoot());
     }
 }
 

@@ -26,7 +26,7 @@ pub struct Enemy {
     pub state: EnemyState,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
-    pub movement_counter: i32,
+    pub fire_counter: i32,
 }
 
 impl Enemy {
@@ -38,13 +38,8 @@ impl Enemy {
             state: EnemyState::Stationary,
             pos: (80.0, -5.0),
             vel: (0.0, 0.5),
-            movement_counter: 0,
+            fire_counter: 60,
         }
-    }
-
-    /// Updates the position.
-    fn set_pos(&mut self, pos: (f32, f32)) {
-        self.pos = pos;
     }
 }
 
@@ -59,13 +54,18 @@ impl Alive for Enemy {
 }
 
 impl Shoot for Enemy {
-    fn shoot(&self) -> Bullet {
+    fn shoot(&mut self) -> Bullet {
+        self.fire_counter = 0;
         let mut bullet = Bullet::new((
             self.x_pos(),
-            self.top() as f32,
+            self.bottom() as f32,
         ));
-        bullet.vel.1 = -2.0;
+        bullet.vel.1 = 1.0;
         bullet
+    }
+
+    fn ready_to_shoot(&self) -> bool {
+        self.fire_counter > 120
     }
 }
 
@@ -82,7 +82,7 @@ impl Entity for Enemy {
     }
 
     fn update(&mut self, _: u32) { 
-
+        self.fire_counter += 1;
         self.advance();
     }
 }

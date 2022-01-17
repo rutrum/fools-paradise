@@ -1,4 +1,4 @@
-use crate::entity::{Entity, Shoot};
+use crate::entity::{Entity, Shoot, Alive};
 use crate::sprite::Sprite;
 use crate::bullet::Bullet;
 use crate::SpriteList;
@@ -34,6 +34,7 @@ pub struct Player {
     pub pos: (f32, f32),
     pub vel: (f32, f32),
     pub movement_counter: i32,
+    dead: bool,
 }
 
 impl Player {
@@ -50,6 +51,7 @@ impl Player {
             pos: (80.0, 80.0),
             vel: (0.0, 0.0),
             movement_counter: 0,
+            dead: false,
         }
     }
 
@@ -69,14 +71,29 @@ impl Player {
         self.vel.1 = 0.5;
     }
 }
+
+impl Alive for Player {
+    fn dead(&self) -> bool {
+        self.dead
+    }
+
+    fn kill(&mut self) {
+        self.dead = true;
+    }
+}
+
 impl Shoot for Player {
-    fn shoot(&self) -> Bullet {
+    fn shoot(&mut self) -> Bullet {
         let mut bullet = Bullet::new((
             self.x_pos(),
             self.top() as f32,
         ));
         bullet.vel.1 = -2.0;
         bullet
+    }
+
+    fn ready_to_shoot(&self) -> bool {
+        true
     }
 }
 

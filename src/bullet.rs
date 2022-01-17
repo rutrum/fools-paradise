@@ -13,6 +13,8 @@ pub struct Bullet {
 
     pub state: u32,
     pub counter: u32,
+
+    pub dead: bool,
 }
 
 impl Bullet {
@@ -28,6 +30,7 @@ impl Bullet {
             vel: (0.0, 0.0),
             state: 0,
             counter: 0,
+            dead: false,
         }
     }
 }
