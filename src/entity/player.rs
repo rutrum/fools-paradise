@@ -40,7 +40,7 @@ impl Player {
                 SpriteName::ship9,
             ],
             state: PlayerState::Stationary,
-            pos: (80.0, 80.0),
+            pos: (80.0, 120.0),
             vel: (0.0, 0.0),
             movement_counter: 0,
             death_counter: 0,

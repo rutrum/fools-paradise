@@ -62,6 +62,15 @@ impl Game {
             100 - self.play_frame as i32 / 60
         };
     }
+
+    fn restart(&mut self) {
+        self.player = Player::new();
+        self.enemies = Vec::new();
+        self.bullets = Vec::new();
+        self.enemy_bullets = Vec::new();
+        self.play_frame = 0;
+        self.spawn_cooldown = 1;
+    }
 }
 
 impl Runtime for Game {
@@ -134,6 +143,13 @@ fn gameplay_update(game: &mut Game) {
         }
         text("Final score:", 30, 50);
         text(game.score().to_string(), 30, 60);
+
+        text("Press action to", 30, 100);
+        text("play again.", 30, 110);
+
+        if game.controls.pressed_or_held(Button::Primary) {
+            game.restart();
+        }
     }
 
 
