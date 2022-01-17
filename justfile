@@ -20,7 +20,7 @@ tree:
     tree -I "target|out"
 
 img:
-    w4 png2src --template graphics/template.rs --rs graphics/out/*.png > src/sprite_consts.rs
+    w4 png2src --template graphics/template.rs --rs graphics/out/*.png > src/sprite/sprite_list.rs
 
 cart-size: release-build
     ls target/release.wasm -lh | cut -d' ' -f 5

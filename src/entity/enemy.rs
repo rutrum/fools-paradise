@@ -45,6 +45,10 @@ impl Alive for Enemy {
         EnemyState::Dead == self.state
     }
 
+    fn dying(&self) -> bool {
+        EnemyState::Dead == self.state
+    }
+
     fn kill(&mut self) {
         self.state = EnemyState::Dead;
     }

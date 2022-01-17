@@ -11,19 +11,7 @@ pub enum PlayerState {
     TurnLeft,
     TiltRight,
     TurnRight,
-}
-
-impl PlayerState {
-    fn sprite_idx(&self) -> usize {
-        use PlayerState::*;
-        match self {
-            Stationary => 0,
-            TiltLeft => 1,
-            TurnLeft => 2,
-            TiltRight => 3,
-            TurnRight => 4,
-        }
-    }
+    Dying,
 }
 
 #[derive(Clone, Debug)]
@@ -33,7 +21,7 @@ pub struct Player {
     pub pos: (f32, f32),
     pub vel: (f32, f32),
     pub movement_counter: i32,
-    dead: bool,
+    death_counter: u32,
 }
 
 impl Player {
@@ -45,12 +33,16 @@ impl Player {
                 SpriteList::ship3.get(),
                 SpriteList::ship4.get(),
                 SpriteList::ship5.get(),
+                SpriteList::ship6.get(),
+                SpriteList::ship7.get(),
+                SpriteList::ship8.get(),
+                SpriteList::ship9.get(),
             ],
             state: PlayerState::Stationary,
             pos: (80.0, 80.0),
             vel: (0.0, 0.0),
             movement_counter: 0,
-            dead: false,
+            death_counter: 0,
         }
     }
 
@@ -73,11 +65,15 @@ impl Player {
 
 impl Alive for Player {
     fn dead(&self) -> bool {
-        self.dead
+        self.death_counter > 40
+    }
+
+    fn dying(&self) -> bool {
+        self.death_counter > 0
     }
 
     fn kill(&mut self) {
-        self.dead = true;
+        self.state = PlayerState::Dying;
     }
 }
 
@@ -105,10 +101,31 @@ impl Entity for Player {
     fn y_vel(&self) -> f32 { self.vel.1 }
 
     fn sprite(&self) -> &Sprite { 
-        &self.sprites[self.state.sprite_idx()] 
+        use PlayerState::*;
+        let idx = match self.state {
+            Stationary => 0,
+            TiltLeft => 1,
+            TurnLeft => 2,
+            TiltRight => 3,
+            TurnRight => 4,
+            Dying => match self.death_counter {
+                x if x < 10 => 5,
+                x if x < 20 => 6,
+                x if x < 30 => 7,
+                x if x < 40 => 8,
+                _ => 8
+            }
+        };
+        &self.sprites[idx] 
     }
 
     fn update(&mut self, _: u32) { 
+        // dying? something different
+        if let PlayerState::Dying = self.state {
+            self.death_counter += 1;
+            return;
+        }
+
         // update movement counter based on speed
         if self.x_vel() < 0.0 {
             if self.movement_counter > -TURN_FRAMES {

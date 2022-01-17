@@ -12,15 +12,24 @@ mod enemy;
 pub use enemy::Enemy;
 
 pub trait Shoot {
+    /// Create the bullet to be shot
     fn shoot(&mut self) -> Bullet;
 
+    /// Determine if the bullet should be made
     fn ready_to_shoot(&self) -> bool;
 }
 
 pub trait Alive {
+    /// Is the dead?
     fn dead(&self) -> bool;
+
+    /// Is it dying?  This should be true after killing and always true when `dead()` is true.
+    fn dying(&self) -> bool;
+
+    /// Make it dead.
     fn kill(&mut self);
 
+    /// Not dead.  Can still be alive while dying.
     fn alive(&self) -> bool {
         !self.dead()
     }

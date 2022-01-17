@@ -47,7 +47,7 @@ impl Entity for Bullet {
         &self.sprites[self.state as usize % 4]
     }
 
-    fn update(&mut self, frame: u32) { 
+    fn update(&mut self, _frame: u32) { 
         self.counter += 1;
         if self.counter % ANIMATION_SPEED == 0 {
             self.state += 1;
