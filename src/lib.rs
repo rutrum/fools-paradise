@@ -5,6 +5,7 @@ use wasm4::sys::*;
 pub use wasm4::*;
 
 mod util;
+use util::Random;
 mod entity;
 pub use entity::*;
 
@@ -28,11 +29,14 @@ struct Game {
     bullets: Vec<Bullet>,
     enemy_bullets: Vec<Bullet>,
     frame: u32,
+    play_frame: u32,
+    random: Random,
+    spawn_cooldown: i32,
 }
 
 impl Game {
     fn score(&self) -> u32 {
-        self.frame / 10
+        self.play_frame / 10
     }
 
     fn draw_entities(&self) {
@@ -50,6 +54,14 @@ impl Game {
         self.bullets.iter_mut().for_each(|e| e.update(self.frame));
         self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
     }
+
+    fn new_spawn_cooldown(&mut self) {
+        self.spawn_cooldown = if self.play_frame > 60 * (100 - 30) {
+            30
+        } else {
+            100 - self.play_frame as i32 / 60
+        };
+    }
 }
 
 impl Runtime for Game {
@@ -66,11 +78,16 @@ impl Runtime for Game {
             enemy_bullets: Vec::new(),
             player: Player::new(),
             frame: 0,
+            play_frame: 0,
+            random: Random::seed(0),
+            spawn_cooldown: 1,
         }
     }
 
     fn update(&mut self) {
         self.controls.next();
+        self.frame += 1;
+        self.spawn_cooldown -= 1;
 
         use GameState::*;
         match self.state {
@@ -98,6 +115,7 @@ fn menu_update(game: &mut Game) {
     }
 
     if game.controls.pressed(Button::Primary) {
+        game.random = Random::seed(game.frame);
         game.state = GameState::Playing;
     }
 }
@@ -109,7 +127,7 @@ fn gameplay_update(game: &mut Game) {
             *DRAW_COLORS = 0x02; // backwards to indexed colors
         }
         text(game.score().to_string(), 1, 1);
-        game.frame += 1;
+        game.play_frame += 1;
     } else {
         unsafe {
             *DRAW_COLORS = 0x03; // backwards to indexed colors
@@ -169,10 +187,11 @@ fn gameplay_update(game: &mut Game) {
     // draw
     game.draw_entities();
 
-    if game.frame % 100 == 30 {
+    if game.spawn_cooldown <= 0 {
         let mut enemy = Enemy::new();
-        *enemy.x_pos_mut() = (game.frame % 57) as f32 * 3.0;
+        *enemy.x_pos_mut() = game.random.in_range(8, 160 - 8) as f32;
         game.enemies.push(enemy);
+        game.new_spawn_cooldown();
     }
 }
 

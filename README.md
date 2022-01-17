@@ -2,6 +2,4 @@
 
 To do:
 
-* music? (at least on home screen)
-* randomize enemy appearance, scale with time
 * Polish?

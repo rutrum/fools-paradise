@@ -56,11 +56,11 @@ impl Player {
     }
 
     pub fn move_up(&mut self) {
-        self.vel.1 = -0.5;
+        self.vel.1 = -1.0;
     }
 
     pub fn move_down(&mut self) {
-        self.vel.1 = 0.5;
+        self.vel.1 = 1.0;
     }
 }
 
