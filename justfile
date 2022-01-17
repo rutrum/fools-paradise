@@ -2,7 +2,7 @@ cart-name := "cart"
 
 default: watch
 
-release-build:
+release-build: img
     cargo build --release
     cp target/wasm32-unknown-unknown/release/{{cart-name}}.wasm target/release.wasm
     wasm-snip --snip-rust-fmt-code --snip-rust-panicking-code -o target/release.wasm target/release.wasm

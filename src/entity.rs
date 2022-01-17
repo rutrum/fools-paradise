@@ -1,6 +1,20 @@
 use crate::sprite::Sprite;
 use crate::wasm4::sys::*;
+use crate::Bullet;
 use crate::util;
+
+pub trait Shoot {
+    fn shoot(&self) -> Bullet;
+}
+
+pub trait Alive {
+    fn dead(&self) -> bool;
+    fn kill(&mut self);
+
+    fn alive(&self) -> bool {
+        !self.dead()
+    }
+}
 
 pub trait Entity {
 

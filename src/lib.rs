@@ -18,6 +18,8 @@ mod player;
 use player::*;
 mod bullet;
 use bullet::*;
+mod enemy;
+use enemy::*;
 
 const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
@@ -29,6 +31,7 @@ struct Game {
     state: GameState,
     controls: Controls,
     player: Player,
+    enemies: Vec<Enemy>,
     bullets: Vec<Bullet>,
     frame: u32,
 }
@@ -43,6 +46,7 @@ impl Runtime for Game {
             state: GameState::Playing,
             controls: Controls::new(),
             bullets: Vec::new(),
+            enemies: Vec::new(),
             player: Player::new(),
             frame: 0,
         }
@@ -54,29 +58,23 @@ impl Runtime for Game {
         self.controls.next();
 
         if self.controls.pressed_or_held(Button::Left) {
-            player.vel.0 = -1.0;
+            player.move_left();
         } else if self.controls.pressed_or_held(Button::Right) {
-            player.vel.0 = 1.0;
+            player.move_right();
         } else {
             player.vel.0 = 0.0;
         }
 
         if self.controls.pressed_or_held(Button::Up) {
-            player.vel.1 = -0.5;
+            player.move_up();
         } else if self.controls.pressed_or_held(Button::Down) {
-            player.vel.1 = 0.5;
+            player.move_down();
         } else {
             player.vel.1 = 0.0;
         }
 
         if self.controls.pressed(Button::Primary) {
-            text("shoot!", 10, 150);
-            let mut bullet = Bullet::new((
-                player.x_pos(),
-                player.top() as f32,
-            ));
-            bullet.vel.1 = -2.0;
-            self.bullets.push(bullet);
+            self.bullets.push(player.shoot());
         }
 
         self.bullets.iter_mut().for_each(|bullet| {
@@ -89,12 +87,33 @@ impl Runtime for Game {
             .filter(|b| !b.off_screen())
             .collect();
 
-        text(format!("{}", self.bullets.len()), 10, 10);
+        //text(format!("{}", self.bullets.len()), 10, 10);
 
         player.update(self.frame);
         player.draw();
 
+        self.enemies.iter_mut().for_each(|enemy| {
+            enemy.update(self.frame);
+            enemy.draw();
+            if self.bullets.iter().any(|bullet| {
+               enemy.collides_with(bullet)
+            }) {
+                enemy.kill();
+            }
+        });
+
+        self.enemies = core::mem::take(&mut self.enemies)
+            .into_iter()
+            .filter(|b| !b.off_screen() && !b.dead())
+            .collect();
+
         self.frame += 1;
+
+        if self.frame % 100 == 30 {
+            let mut enemy = Enemy::new();
+            *enemy.x_pos_mut() = (self.frame % 57) as f32 * 3.0;
+            self.enemies.push(enemy);
+        }
     }
 }
 
