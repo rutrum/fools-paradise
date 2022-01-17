@@ -1,4 +1,5 @@
 use crate::Sprite;
+use crate::SpriteName;
 use crate::wasm4::sys::*;
 use crate::util;
 
@@ -52,11 +53,15 @@ pub trait Entity {
     /// Get the y velocity.
     fn y_vel(&self) -> f32;
 
-    /// Get the current sprite.
-    fn sprite(&self) -> &Sprite;
+    /// Get the name of the current sprite, `SpriteName`.
+    fn sprite_name(&self) -> SpriteName;
 
     /// Called every frame to update.
     fn update(&mut self, frame: u32);
+
+    fn sprite(&self) -> Sprite {
+        self.sprite_name().get()
+    }
 
     /// Adjusts the position based on the velocity.  Ensures that the x position
     /// doesn't go outside left and right walls of screen.

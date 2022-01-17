@@ -1,12 +1,12 @@
 use crate::entity::Entity;
 use crate::sprite::Sprite;
-use crate::SpriteList;
+use crate::SpriteName;
 
 const ANIMATION_SPEED: u32 = 10;  // frames between states
 
 #[derive(Clone, Debug)]
 pub struct Bullet {
-    pub sprites: Vec<Sprite>,
+    pub sprites: Vec<SpriteName>,
 
     pub pos: (f32, f32),
     pub vel: (f32, f32),
@@ -21,10 +21,10 @@ impl Bullet {
     pub fn new(pos: (f32, f32)) -> Self {
         Self {
             sprites: vec![
-                SpriteList::bullet1.get(),
-                SpriteList::bullet2.get(),
-                SpriteList::bullet3.get(),
-                SpriteList::bullet4.get(),
+                SpriteName::bullet1,
+                SpriteName::bullet2,
+                SpriteName::bullet3,
+                SpriteName::bullet4,
             ],
             pos,
             vel: (0.0, 0.0),
@@ -43,8 +43,8 @@ impl Entity for Bullet {
     fn x_vel(&self) -> f32 { self.vel.0 }
     fn y_vel(&self) -> f32 { self.vel.1 }
 
-    fn sprite(&self) -> &Sprite { 
-        &self.sprites[self.state as usize % 4]
+    fn sprite_name(&self) -> SpriteName { 
+        self.sprites[self.state as usize % 4]
     }
 
     fn update(&mut self, _frame: u32) { 

@@ -105,7 +105,7 @@ fn menu_update(game: &mut Game) {
     text("Press action", 10, 130);
     text("button to start", 10, 140);
 
-    let s = SpriteList::enemy1.get();
+    let s = SpriteName::enemy1.get();
 
     unsafe {
         *DRAW_COLORS = 0x4320; // backwards to indexed colors
@@ -146,10 +146,13 @@ fn gameplay_update(game: &mut Game) {
             game.enemy_bullets.push(enemy.shoot());
         }
 
-        for bullet in &mut game.bullets {
-            if enemy.collides_with(bullet) {
-                enemy.kill();
-                bullet.dead = true;
+        // ensure that bullets pass through dying enemies
+        if !enemy.dying() {
+            for bullet in &mut game.bullets {
+                if enemy.collides_with(bullet) {
+                    enemy.kill();
+                    bullet.dead = true;
+                }
             }
         }
 

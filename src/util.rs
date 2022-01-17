@@ -27,6 +27,7 @@ pub fn bit_range(value: u8, start: usize, end: usize) -> u8 {
     masked_val >> 8 - end
 }
 
+/// Stores a random number and provides some basic psuedo-random number generation.
 pub struct Random {
     v: u32,
 }

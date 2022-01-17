@@ -1,6 +1,6 @@
 use super::*;
 use crate::Sprite;
-use crate::SpriteList;
+use crate::SpriteName;
 use crate::sound;
 
 const TURN_FRAMES: i32 = 15;
@@ -17,7 +17,7 @@ pub enum PlayerState {
 
 #[derive(Clone, Debug)]
 pub struct Player {
-    pub sprites: Vec<Sprite>,
+    pub sprites: Vec<SpriteName>,
     pub state: PlayerState,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
@@ -29,15 +29,15 @@ impl Player {
     pub fn new() -> Self {
         Self {
             sprites: vec![
-                SpriteList::ship1.get(),
-                SpriteList::ship2.get(),
-                SpriteList::ship3.get(),
-                SpriteList::ship4.get(),
-                SpriteList::ship5.get(),
-                SpriteList::ship6.get(),
-                SpriteList::ship7.get(),
-                SpriteList::ship8.get(),
-                SpriteList::ship9.get(),
+                SpriteName::ship1,
+                SpriteName::ship2,
+                SpriteName::ship3,
+                SpriteName::ship4,
+                SpriteName::ship5,
+                SpriteName::ship6,
+                SpriteName::ship7,
+                SpriteName::ship8,
+                SpriteName::ship9,
             ],
             state: PlayerState::Stationary,
             pos: (80.0, 80.0),
@@ -103,7 +103,7 @@ impl Entity for Player {
     fn x_vel(&self) -> f32 { self.vel.0 }
     fn y_vel(&self) -> f32 { self.vel.1 }
 
-    fn sprite(&self) -> &Sprite { 
+    fn sprite_name(&self) -> SpriteName { 
         use PlayerState::*;
         let idx = match self.state {
             Stationary => 0,
@@ -119,7 +119,7 @@ impl Entity for Player {
                 _ => 8
             }
         };
-        &self.sprites[idx] 
+        self.sprites[idx] 
     }
 
     fn update(&mut self, _: u32) { 

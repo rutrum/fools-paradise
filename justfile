@@ -1,4 +1,5 @@
 cart-name := "cart"
+sprite_out_file := "src/sprite/sprite_name.rs"
 
 default: watch
 
@@ -14,13 +15,13 @@ bundle: release-build
 
 watch:
     w4 watch --no-qr &
-    watchexec -cr -d 0 -i src/sprite/sprite_list.rs -- just img
+    watchexec -cr -d 0 -i {{sprite_out_file}} -- just img
 
 tree:
     tree -I "target|out"
 
 img:
-    w4 png2src --template graphics/template.rs --rs graphics/out/*.png > src/sprite/sprite_list.rs
+    w4 png2src --template graphics/template.rs --rs graphics/out/*.png > {{sprite_out_file}}
 
 cart-size: release-build
     ls target/release.wasm -lh | cut -d' ' -f 5

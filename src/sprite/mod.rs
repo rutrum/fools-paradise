@@ -1,5 +1,5 @@
-mod sprite_list;
-pub use sprite_list::SpriteList;
+mod sprite_name;
+pub use sprite_name::SpriteName;
 
 use crate::util;
 
