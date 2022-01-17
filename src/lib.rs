@@ -86,7 +86,7 @@ fn menu_update(game: &mut Game) {
     text("Press action", 10, 130);
     text("button to start", 10, 140);
 
-    let s = SpriteList::enemy.get();
+    let s = SpriteList::enemy1.get();
 
     unsafe {
         *DRAW_COLORS = 0x4320; // backwards to indexed colors
@@ -121,7 +121,6 @@ fn gameplay_update(game: &mut Game) {
     game.update_entities();
 
     // Check collisions and update
-    
     for enemy in &mut game.enemies {
         if enemy.ready_to_shoot() {
             game.enemy_bullets.push(enemy.shoot());
@@ -134,13 +133,13 @@ fn gameplay_update(game: &mut Game) {
             }
         }
 
-        if game.player.alive() && enemy.collides_with(&game.player) {
+        if !game.player.dying() && enemy.collides_with(&game.player) {
             game.player.kill();
             enemy.kill();
         }
     }
 
-    if game.player.alive() {
+    if !game.player.dying() {
         for bullet in &mut game.enemy_bullets {
             if game.player.collides_with(bullet) {
                 game.player.kill();
@@ -152,7 +151,7 @@ fn gameplay_update(game: &mut Game) {
     // garbage collection
     game.enemies = core::mem::take(&mut game.enemies)
         .into_iter()
-        .filter(|b| !b.off_screen() && !b.dead())
+        .filter(|b| !b.off_screen() && b.alive())
         .collect();
 
     game.bullets = core::mem::take(&mut game.bullets)

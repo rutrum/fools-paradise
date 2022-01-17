@@ -4,17 +4,7 @@ use crate::SpriteList;
 #[derive(Clone, PartialEq, Debug)]
 pub enum EnemyState {
     Stationary,
-    Dead,
-}
-
-impl EnemyState {
-    fn sprite_idx(&self) -> usize {
-        use EnemyState::*;
-        match self {
-            Stationary => 0,
-            Dead => 0,
-        }
-    }
+    Dying,
 }
 
 #[derive(Clone, Debug)]
@@ -23,34 +13,40 @@ pub struct Enemy {
     pub state: EnemyState,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
-    pub fire_counter: i32,
+    pub fire_counter: u32,
+    pub death_counter: u32,
 }
 
 impl Enemy {
     pub fn new() -> Self {
         Self {
             sprites: vec![
-                SpriteList::enemy.get(),
+                SpriteList::enemy1.get(),
+                SpriteList::enemy2.get(),
+                SpriteList::enemy3.get(),
+                SpriteList::enemy4.get(),
             ],
             state: EnemyState::Stationary,
             pos: (80.0, -5.0),
             vel: (0.0, 0.5),
             fire_counter: 60,
+            death_counter: 0,
         }
     }
 }
 
 impl Alive for Enemy {
     fn dead(&self) -> bool {
-        EnemyState::Dead == self.state
+        self.death_counter > 20
     }
 
     fn dying(&self) -> bool {
-        EnemyState::Dead == self.state
+        self.death_counter > 0
     }
 
     fn kill(&mut self) {
-        self.state = EnemyState::Dead;
+        self.state = EnemyState::Dying;
+        self.death_counter += 1;
     }
 }
 
@@ -79,11 +75,25 @@ impl Entity for Enemy {
     fn y_vel(&self) -> f32 { self.vel.1 }
 
     fn sprite(&self) -> &Sprite { 
-        &self.sprites[self.state.sprite_idx()] 
+        use EnemyState::*;
+        let idx = match self.state {
+            Stationary => 0,
+            Dying => match self.death_counter {
+                x if x < 7 => 1,
+                x if x < 15 => 2,
+                _ => 3,
+            },
+        };
+
+        &self.sprites[idx]
     }
 
     fn update(&mut self, _: u32) { 
-        self.fire_counter += 1;
+        if self.dying() {
+            self.death_counter += 1;
+        } else {
+            self.fire_counter += 1;
+        }
         self.advance();
     }
 }
