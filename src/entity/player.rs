@@ -88,6 +88,7 @@ impl Alive for Player {
     fn damage(&mut self, amount: u32) {
         if self.invincible_counter == 0 {
             if self.health <= amount {
+                self.health = 0;
                 self.kill();
             } else {
                 self.health -= amount;

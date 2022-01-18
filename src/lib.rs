@@ -46,6 +46,15 @@ impl Game {
         self.enemies.iter().for_each(|e| e.draw());
         self.bullets.iter().for_each(|e| e.draw());
         self.enemy_bullets.iter().for_each(|e| e.draw());
+
+        // health
+        let heart = SpriteName::heart.get();
+        unsafe {
+            *DRAW_COLORS = 0x330; // backwards to indexed colors
+        }
+        for x in 0..self.player.health() {
+            blit(&heart.data, (x * 8 + 10) as i32, 150, heart.width, heart.height, heart.flags);
+        }
     }
 
     fn update_entities(&mut self) {
