@@ -15,3 +15,7 @@ pub fn enemy_death() {
 pub fn player_death() {
     tone(370 | (250 << 16), 22 | 90 << 8, 30, TONE_NOISE);
 }
+
+pub fn player_damage() {
+    tone(350 | (380 << 16), 32 << 8, 30, TONE_NOISE);
+}

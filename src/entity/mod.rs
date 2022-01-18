@@ -27,7 +27,22 @@ pub trait Alive {
     /// Is it dying?  This should be true after killing and always true when `dead()` is true.
     fn dying(&self) -> bool;
 
-    /// Make it dead.
+    /// Amount of health the enemy has.
+    fn health(&self) -> u32;
+
+    /// Mutable reference to amount of health the enemy has.
+    fn health_mut(&mut self) -> &mut u32;
+
+    /// Decrease the health by amount.
+    fn damage(&mut self, amount: u32) {
+        if amount >= self.health() {
+            self.kill();
+        } else {
+            *self.health_mut() -= amount;
+        }
+    }
+
+    /// Make it dead, zero health.
     fn kill(&mut self);
 
     /// Not dead.  Can still be alive while dying.

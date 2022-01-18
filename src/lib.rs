@@ -166,7 +166,7 @@ fn gameplay_update(game: &mut Game) {
         if !enemy.dying() {
             for bullet in &mut game.bullets {
                 if enemy.collides_with(bullet) {
-                    enemy.kill();
+                    enemy.damage(bullet.damage);
                     bullet.dead = true;
                 }
             }
@@ -174,14 +174,14 @@ fn gameplay_update(game: &mut Game) {
 
         if !game.player.dying() && enemy.collides_with(&game.player) {
             enemy.kill();
-            game.player.kill();
+            game.player.damage(1);
         }
     }
 
     if !game.player.dying() {
         for bullet in &mut game.enemy_bullets {
             if game.player.collides_with(bullet) {
-                game.player.kill();
+                game.player.damage(bullet.damage);
                 bullet.dead = true;
             }
         }

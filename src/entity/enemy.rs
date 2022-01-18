@@ -16,6 +16,7 @@ pub struct Enemy {
     pub vel: (f32, f32),
     pub fire_counter: u32,
     pub death_counter: u32,
+    health: u32,
 }
 
 impl Enemy {
@@ -32,6 +33,7 @@ impl Enemy {
             vel: (0.0, 0.5),
             fire_counter: 60,
             death_counter: 0,
+            health: 1,
         }
     }
 }
@@ -43,6 +45,14 @@ impl Alive for Enemy {
 
     fn dying(&self) -> bool {
         self.death_counter > 0
+    }
+
+    fn health(&self) -> u32 {
+        self.health
+    }
+
+    fn health_mut(&mut self) -> &mut u32 {
+        &mut self.health
     }
 
     fn kill(&mut self) {

@@ -15,6 +15,7 @@ pub struct Bullet {
     pub counter: u32,
 
     pub dead: bool,
+    pub damage: u32,
 }
 
 impl Bullet {
@@ -31,6 +32,7 @@ impl Bullet {
             state: 0,
             counter: 0,
             dead: false,
+            damage: 1,
         }
     }
 }

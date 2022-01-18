@@ -23,6 +23,8 @@ pub struct Player {
     pub vel: (f32, f32),
     pub movement_counter: i32,
     death_counter: u32,
+    invincible_counter: u32,
+    health: u32,
 }
 
 impl Player {
@@ -44,6 +46,8 @@ impl Player {
             vel: (0.0, 0.0),
             movement_counter: 0,
             death_counter: 0,
+            invincible_counter: 0,
+            health: 3,
         }
     }
 
@@ -71,6 +75,26 @@ impl Alive for Player {
 
     fn dying(&self) -> bool {
         self.death_counter > 0
+    }
+
+    fn health(&self) -> u32 {
+        self.health
+    }
+
+    fn health_mut(&mut self) -> &mut u32 {
+        &mut self.health
+    }
+
+    fn damage(&mut self, amount: u32) {
+        if self.invincible_counter == 0 {
+            if self.health <= amount {
+                self.kill();
+            } else {
+                self.health -= amount;
+                self.invincible_counter = 60;
+                sound::player_damage();
+            }
+        }
     }
 
     fn kill(&mut self) {
@@ -129,6 +153,10 @@ impl Entity for Player {
             return;
         }
 
+        if self.invincible_counter > 0 {
+            self.invincible_counter -= 1;
+        }
+
         // update movement counter based on speed
         if self.x_vel() < 0.0 {
             if self.movement_counter > -TURN_FRAMES {
@@ -164,5 +192,21 @@ impl Entity for Player {
 
         if self.y_pos() > 160.0 { *self.y_pos_mut() = 160.0 }
         if self.y_pos() < 0.0 { *self.y_pos_mut() = 0.0 }
+    }
+
+    fn draw(&self) {
+        if (self.invincible_counter / 5) % 2 == 0 {
+            unsafe {
+                *DRAW_COLORS = 0x4320; // backwards to indexed colors
+            }
+            blit(
+                &self.sprite().data, 
+                self.left(), 
+                self.top(), 
+                self.sprite().width, 
+                self.sprite().height, 
+                self.sprite().flags
+            );
+        }
     }
 }
