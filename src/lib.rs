@@ -173,8 +173,8 @@ fn gameplay_update(game: &mut Game) {
         }
 
         if !game.player.dying() && enemy.collides_with(&game.player) {
-            game.player.kill();
             enemy.kill();
+            game.player.kill();
         }
     }
 

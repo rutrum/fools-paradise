@@ -159,5 +159,10 @@ impl Entity for Player {
         };
 
         self.advance();
+
+        // Make sure can't go off screen
+
+        if self.y_pos() > 160.0 { *self.y_pos_mut() = 160.0 }
+        if self.y_pos() < 0.0 { *self.y_pos_mut() = 0.0 }
     }
 }
