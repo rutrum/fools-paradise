@@ -6,7 +6,6 @@ My submission for the WASM-4 Game Jam 2022.
 
 * enemies that shoot diagonally
 * points for shooting enemies
-* health
 * shoot bullets
 * background (parallax)
 * powerups (spreader)
@@ -15,6 +14,8 @@ My submission for the WASM-4 Game Jam 2022.
 * music enable/disable on main menu
 * sound enable/disable on main menu
 * logo
+
+* separate drawing functionality from physics
 
 ## Big feature idea: daynight cycle
 

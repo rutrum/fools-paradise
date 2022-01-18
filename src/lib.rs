@@ -28,10 +28,12 @@ struct Game {
     enemies: Vec<Enemy>,
     bullets: Vec<Bullet>,
     enemy_bullets: Vec<Bullet>,
+    clouds: Vec<Cloud>,
     frame: u32,
     play_frame: u32,
     random: Random,
     spawn_cooldown: i32,
+    cloud_spawn: i32,
 }
 
 impl Game {
@@ -46,6 +48,7 @@ impl Game {
         self.enemies.iter().for_each(|e| e.draw());
         self.bullets.iter().for_each(|e| e.draw());
         self.enemy_bullets.iter().for_each(|e| e.draw());
+        self.clouds.iter().for_each(|e| e.draw());
 
         // health
         let heart = SpriteName::heart.get();
@@ -62,6 +65,7 @@ impl Game {
         self.enemies.iter_mut().for_each(|e| e.update(self.frame));
         self.bullets.iter_mut().for_each(|e| e.update(self.frame));
         self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
+        self.clouds.iter_mut().for_each(|e| e.update(self.frame));
     }
 
     fn new_spawn_cooldown(&mut self) {
@@ -72,6 +76,11 @@ impl Game {
         };
     }
 
+    fn new_cloud(&mut self) {
+        let cloud = Cloud::new(&mut self.random);
+        self.clouds.push(cloud);
+    }
+
     fn restart(&mut self) {
         self.player = Player::new();
         self.enemies = Vec::new();
@@ -80,6 +89,28 @@ impl Game {
         self.play_frame = 0;
         self.spawn_cooldown = 1;
     }
+
+    fn cull_entities(&mut self) {
+        self.enemies = core::mem::take(&mut self.enemies)
+            .into_iter()
+            .filter(|b| !b.off_screen() && b.alive())
+            .collect();
+
+        self.bullets = core::mem::take(&mut self.bullets)
+            .into_iter()
+            .filter(|b| !b.off_screen() && !b.dead)
+            .collect();
+
+        self.enemy_bullets = core::mem::take(&mut self.enemy_bullets)
+            .into_iter()
+            .filter(|b| !b.off_screen() && !b.dead)
+            .collect();
+
+        self.clouds = core::mem::take(&mut self.clouds)
+            .into_iter()
+            .filter(|b| !b.off_screen())
+            .collect();
+        }
 }
 
 impl Runtime for Game {
@@ -94,11 +125,13 @@ impl Runtime for Game {
             bullets: Vec::new(),
             enemies: Vec::new(),
             enemy_bullets: Vec::new(),
+            clouds: Vec::new(),
             player: Player::new(),
             frame: 0,
             play_frame: 0,
             random: Random::seed(0),
             spawn_cooldown: 1,
+            cloud_spawn: 30,
         }
     }
 
@@ -106,6 +139,7 @@ impl Runtime for Game {
         self.controls.next();
         self.frame += 1;
         self.spawn_cooldown -= 1;
+        self.cloud_spawn -= 1;
 
         use GameState::*;
         match self.state {
@@ -161,9 +195,13 @@ fn gameplay_update(game: &mut Game) {
         }
     }
 
-
     // Update physics
     game.update_entities();
+
+    if game.cloud_spawn <= 0 {
+        game.new_cloud();
+        game.cloud_spawn = 30;
+    }
 
     // Check collisions and update
     for enemy in &mut game.enemies {
@@ -196,21 +234,7 @@ fn gameplay_update(game: &mut Game) {
         }
     }
 
-    // garbage collection
-    game.enemies = core::mem::take(&mut game.enemies)
-        .into_iter()
-        .filter(|b| !b.off_screen() && b.alive())
-        .collect();
-
-    game.bullets = core::mem::take(&mut game.bullets)
-        .into_iter()
-        .filter(|b| !b.off_screen() && !b.dead)
-        .collect();
-
-    game.enemy_bullets = core::mem::take(&mut game.enemy_bullets)
-        .into_iter()
-        .filter(|b| !b.off_screen() && !b.dead)
-        .collect();
+    game.cull_entities();
 
     // draw
     game.draw_entities();
