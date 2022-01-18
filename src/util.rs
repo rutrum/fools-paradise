@@ -27,6 +27,48 @@ pub fn bit_range(value: u8, start: usize, end: usize) -> u8 {
     masked_val >> 8 - end
 }
 
+/// Find the value w proportion along the line from start to end
+pub fn interpolate(start: f32, end: f32, w: f32) -> f32 {
+    (end - start) * (3.0 - w * 2.0) * w * w + start
+    //(end - start) * w + start
+}
+
+/// Generates a random gradient with a seed fixed by the x, y coordinates
+pub fn random_gradient(x: i32, y: i32) -> (f32, f32) {
+    let seed = x + 160 * y;
+    let mut r = Random::seed(seed.abs() as u32);
+    (r.angle().sin(), r.angle().cos())
+}
+
+/// Returns product of random gradient and distance
+pub fn dot_grid_gradient(ix: i32, iy: i32, x: f32, y: f32) -> f32 {
+    let grad = random_gradient(ix, iy);
+    let dist = (x - ix as f32, y - iy as f32);
+    grad.0 * dist.0 + grad.1 * dist.1
+}
+
+/// Perlin noise!
+pub fn perlin(x: f32, y: f32) -> f32 {
+    let ix = x.floor() as i32;
+    let iy = y.floor() as i32;
+
+    let ws = (x - ix as f32, y - iy as f32);
+
+    let n = (
+        dot_grid_gradient(ix, iy, x, y),
+        dot_grid_gradient(ix+1, iy, x, y),
+    );
+    let m = (
+        dot_grid_gradient(ix, iy+1, x, y),
+        dot_grid_gradient(ix+1, iy+1, x, y),
+    );
+    let inter_xs = (
+        interpolate(n.0, n.1, ws.0),
+        interpolate(m.0, m.1, ws.0),
+    );
+    interpolate(inter_xs.0, inter_xs.1, ws.1)
+}
+
 /// Stores a random number and provides some basic psuedo-random number generation.
 pub struct Random {
     v: u32,
@@ -37,7 +79,6 @@ impl Random {
     /// Seed with the given value and randomize.
     pub fn seed(v: u32) -> Self {
         let mut r = Self { v };
-        r.next();
         r.next();
         r.next();
         r
@@ -64,5 +105,9 @@ impl Random {
 
     pub fn in_range(&mut self, start: u32, end: u32) -> u32 {
         (self.float() * (end - start) as f32) as u32 + start
+    }
+
+    pub fn angle(&mut self) -> f32 {
+        self.float() * 2.0 * 3.141592
     }
 }

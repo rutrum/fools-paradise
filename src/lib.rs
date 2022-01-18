@@ -14,6 +14,8 @@ pub use sprite::*;
 
 mod sound;
 
+mod cloud;
+
 const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
 enum GameState {
@@ -28,12 +30,10 @@ struct Game {
     enemies: Vec<Enemy>,
     bullets: Vec<Bullet>,
     enemy_bullets: Vec<Bullet>,
-    clouds: Vec<Cloud>,
     frame: u32,
     play_frame: u32,
     random: Random,
     spawn_cooldown: i32,
-    cloud_spawn: i32,
 }
 
 impl Game {
@@ -48,7 +48,6 @@ impl Game {
         self.enemies.iter().for_each(|e| e.draw());
         self.bullets.iter().for_each(|e| e.draw());
         self.enemy_bullets.iter().for_each(|e| e.draw());
-        self.clouds.iter().for_each(|e| e.draw());
 
         // health
         let heart = SpriteName::heart.get();
@@ -65,7 +64,6 @@ impl Game {
         self.enemies.iter_mut().for_each(|e| e.update(self.frame));
         self.bullets.iter_mut().for_each(|e| e.update(self.frame));
         self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
-        self.clouds.iter_mut().for_each(|e| e.update(self.frame));
     }
 
     fn new_spawn_cooldown(&mut self) {
@@ -74,11 +72,6 @@ impl Game {
         } else {
             100 - self.play_frame as i32 / 60
         };
-    }
-
-    fn new_cloud(&mut self) {
-        let cloud = Cloud::new(&mut self.random);
-        self.clouds.push(cloud);
     }
 
     fn restart(&mut self) {
@@ -105,12 +98,7 @@ impl Game {
             .into_iter()
             .filter(|b| !b.off_screen() && !b.dead)
             .collect();
-
-        self.clouds = core::mem::take(&mut self.clouds)
-            .into_iter()
-            .filter(|b| !b.off_screen())
-            .collect();
-        }
+    }
 }
 
 impl Runtime for Game {
@@ -125,13 +113,11 @@ impl Runtime for Game {
             bullets: Vec::new(),
             enemies: Vec::new(),
             enemy_bullets: Vec::new(),
-            clouds: Vec::new(),
             player: Player::new(),
             frame: 0,
             play_frame: 0,
             random: Random::seed(0),
             spawn_cooldown: 1,
-            cloud_spawn: 30,
         }
     }
 
@@ -139,7 +125,6 @@ impl Runtime for Game {
         self.controls.next();
         self.frame += 1;
         self.spawn_cooldown -= 1;
-        self.cloud_spawn -= 1;
 
         use GameState::*;
         match self.state {
@@ -150,6 +135,9 @@ impl Runtime for Game {
 }
 
 fn menu_update(game: &mut Game) {
+    // draw clouds using perlin noise cause why not
+    cloud::draw(game.frame, -1.0);
+
     unsafe {
         *DRAW_COLORS = 0x03; // backwards to indexed colors
     }
@@ -170,6 +158,7 @@ fn menu_update(game: &mut Game) {
         game.random = Random::seed(game.frame);
         game.state = GameState::Playing;
     }
+
 }
 
 fn gameplay_update(game: &mut Game) {
@@ -195,13 +184,10 @@ fn gameplay_update(game: &mut Game) {
         }
     }
 
+    cloud::draw(game.frame, 1.4);
+
     // Update physics
     game.update_entities();
-
-    if game.cloud_spawn <= 0 {
-        game.new_cloud();
-        game.cloud_spawn = 30;
-    }
 
     // Check collisions and update
     for enemy in &mut game.enemies {

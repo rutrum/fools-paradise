@@ -12,9 +12,6 @@ pub use bullet::Bullet;
 mod enemy;
 pub use enemy::Enemy;
 
-mod cloud;
-pub use cloud::Cloud;
-
 pub trait Shoot {
     /// Create the bullet to be shot
     fn shoot(&mut self) -> Bullet;
