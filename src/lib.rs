@@ -16,150 +16,48 @@ mod sound;
 mod color;
 mod cloud;
 mod game;
+pub use game::Game;
 
 enum GameState {
     Menu,
-    Playing,
+    Playing(Game),
 }
 
-struct Game {
-    state: GameState,
+struct App {
     controls: Controls,
-    player: Player,
-    enemies: Vec<Enemy>,
-    turrets: Vec<Turret>,
-    bullets: Vec<Bullet>,
-    enemy_bullets: Vec<Bullet>,
-    powerups: Vec<PowerUp>,
     frame: u32,
-    play_frame: u32,
-    random: Random,
-    spawn_cooldown: i32,
-    kills: u32,
-    powerup_cooldown: i32,
+    state: GameState,
 }
 
-impl Game {
+impl App {
     fn new() -> Self {
         Self {
-            state: GameState::Menu,
             controls: Controls::new(),
-            bullets: Vec::new(),
-            enemies: Vec::new(),
-            turrets: Vec::new(),
-            enemy_bullets: Vec::new(),
-            player: Player::new(),
-            powerups: Vec::new(),
             frame: 0,
-            play_frame: 0,
-            random: Random::seed(0),
-            spawn_cooldown: 1,
-            powerup_cooldown: 1000,
-            kills: 0,
+            state: GameState::Menu,
         }
-    }
-    
-    fn score(&self) -> u32 {
-        self.play_frame / 10 + 10 * self.kills
-    }
-
-    fn draw_entities(&self) {
-        if !self.player.dead() {
-            self.player.draw();
-        }
-        self.enemies.iter().for_each(|e| e.draw());
-        self.turrets.iter().for_each(|e| e.draw());
-        self.bullets.iter().for_each(|e| e.draw());
-        self.enemy_bullets.iter().for_each(|e| e.draw());
-        self.powerups.iter().for_each(|e| e.draw());
-
-        // health
-        let heart = Sprite::heart.get();
-        color::set_draw(0x330);
-        for x in 0..self.player.health() {
-            blit(&heart.data, (x * 8 + 10) as i32, 150, heart.width, heart.height, heart.flags);
-        }
-    }
-
-    fn update_entities(&mut self) {
-        self.player.update(self.frame);
-        self.enemies.iter_mut().for_each(|e| e.update(self.frame));
-        self.turrets.iter_mut().for_each(|e| e.update(self.frame));
-        self.bullets.iter_mut().for_each(|e| e.update(self.frame));
-        self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
-        self.powerups.iter_mut().for_each(|e| e.update(self.frame));
-    }
-
-    fn new_spawn_cooldown(&mut self) {
-        self.spawn_cooldown = if self.play_frame > 60 * (100 - 30) {
-            30
-        } else {
-            100 - self.play_frame as i32 / 60
-        };
-    }
-
-    fn restart(&mut self) {
-        self.player = Player::new();
-        self.enemies = Vec::new();
-        self.bullets = Vec::new();
-        self.turrets = Vec::new();
-        self.enemy_bullets = Vec::new();
-        self.powerups = Vec::new();
-        self.play_frame = 0;
-        self.spawn_cooldown = 1;
-        self.powerup_cooldown = 1000;
-        self.kills = 0;
-    }
-
-    fn cull_entities(&mut self) {
-        self.enemies = core::mem::take(&mut self.enemies)
-            .into_iter()
-            .filter(|b| !b.off_screen() && !b.dead())
-            .collect();
-
-        self.turrets = core::mem::take(&mut self.turrets)
-            .into_iter()
-            .filter(|b| !b.off_screen() && !b.dead())
-            .collect();
-
-        self.bullets = core::mem::take(&mut self.bullets)
-            .into_iter()
-            .filter(|b| !b.off_screen() && !b.dead)
-            .collect();
-
-        self.enemy_bullets = core::mem::take(&mut self.enemy_bullets)
-            .into_iter()
-            .filter(|b| !b.off_screen() && !b.dead)
-            .collect();
-
-        self.powerups = core::mem::take(&mut self.powerups)
-            .into_iter()
-            .filter(|b| !b.off_screen() && !b.collected)
-            .collect();
     }
 }
 
-impl Runtime for Game {
+impl Runtime for App {
     fn start() -> Self {
         color::Palette::Crimson.set();
-        Game::new()
+        App::new()
     }
 
     fn update(&mut self) {
         self.controls.next();
         self.frame += 1;
-        self.spawn_cooldown -= 1;
-        self.powerup_cooldown -= 1;
 
         use GameState::*;
-        match self.state {
+        match &mut self.state {
             Menu => menu_update(self),
-            Playing => gameplay_update(self),
+            Playing(game) => game.tick(),
         }
     }
 }
 
-fn menu_update(game: &mut Game) {
+fn menu_update(game: &mut App) {
     // draw clouds using perlin noise cause why not
     cloud::draw(game.frame, -1.0);
 
@@ -175,148 +73,8 @@ fn menu_update(game: &mut Game) {
     }
 
     if game.controls.pressed(Button::Primary) {
-        game.random = Random::seed(game.frame);
-        game.state = GameState::Playing;
+        game.state = GameState::Playing(Game::new(Random::seed(game.frame)));
     }
 }
 
-fn gameplay_update(game: &mut Game) {
-    if !game.player.dead() {
-        controls_update(game);
-        color::set_draw(0x02);
-        text(game.score().to_string(), 1, 1);
-        game.play_frame += 1;
-    } else {
-        color::set_draw(0x03);
-        text("Final score:", 20, 50);
-        text(game.score().to_string(), 120, 50);
-        text("Total kills:", 20, 60);
-        text(game.kills.to_string(), 120, 60);
-
-        text("Press action to", 20, 100);
-        text("play again.", 20, 110);
-
-        if game.controls.pressed_or_held(Button::Primary) {
-            game.restart();
-        }
-    }
-
-    cloud::draw(game.frame, 1.4);
-
-    // Update physics
-    game.update_entities();
-
-    // Check collisions and update
-    for enemy in &mut game.enemies {
-        game.enemy_bullets.append(&mut enemy.shoot());
-
-        // ensure that bullets pass through dying enemies
-        if !enemy.dying() {
-            for bullet in &mut game.bullets {
-                if enemy.collides_with(bullet) {
-                    enemy.damage(bullet.damage);
-                    if enemy.dying() { game.kills += 1 }
-                    bullet.dead = true;
-                }
-            }
-        }
-
-        if !game.player.dying() && enemy.collides_with(&game.player) {
-            enemy.kill();
-            game.player.damage(1);
-        }
-    }
-
-    for enemy in &mut game.turrets {
-        game.enemy_bullets.append(&mut enemy.shoot());
-
-        // ensure that bullets pass through dying enemies
-        if !enemy.dying() {
-            for bullet in &mut game.bullets {
-                if enemy.collides_with(bullet) {
-                    enemy.damage(bullet.damage);
-                    if enemy.dying() { game.kills += 1 }
-                    bullet.dead = true;
-                }
-            }
-        }
-
-        if !game.player.dying() && enemy.collides_with(&game.player) {
-            enemy.kill();
-            game.player.damage(1);
-        }
-    }
-
-    if !game.player.dying() {
-        for bullet in &mut game.enemy_bullets {
-            if game.player.collides_with(bullet) {
-                game.player.damage(bullet.damage);
-                bullet.dead = true;
-            }
-        }
-
-        for powerup in &mut game.powerups {
-            if game.player.collides_with(powerup) {
-                match powerup.t {
-                    PowerType::Health => {
-                        game.player.health += 1;
-                        powerup.collected = true;
-                    }
-                    PowerType::Spreader => {
-                        game.player.power_up(PowerType::Spreader);
-                        powerup.collected = true;
-                    }
-                }
-            }
-        }
-    }
-
-    game.cull_entities();
-
-    // draw
-    game.draw_entities();
-
-    if game.spawn_cooldown <= 0 {
-        let enemy = Turret::spawn(&mut game.random);
-        game.turrets.push(enemy);
-        game.new_spawn_cooldown();
-    }
-
-    if game.spawn_cooldown <= 0 {
-        let enemy = Enemy::spawn(&mut game.random);
-        game.enemies.push(enemy);
-        game.new_spawn_cooldown();
-    }
-
-    if game.powerup_cooldown <= 0 {
-        let powerup = PowerUp::spawn(&mut game.random, PowerType::Health);
-        game.powerups.push(powerup);
-        game.powerup_cooldown = 1000;
-    }
-}
-
-fn controls_update(game: &mut Game) {
-    let mut player = &mut game.player;
-
-    if game.controls.pressed_or_held(Button::Left) {
-        player.move_left();
-    } else if game.controls.pressed_or_held(Button::Right) {
-        player.move_right();
-    } else {
-        player.vel.0 = 0.0;
-    }
-
-    if game.controls.pressed_or_held(Button::Up) {
-        player.move_up();
-    } else if game.controls.pressed_or_held(Button::Down) {
-        player.move_down();
-    } else {
-        player.vel.1 = 0.0;
-    }
-
-    if game.controls.pressed(Button::Primary) {
-        game.bullets.append(&mut player.shoot());
-    }
-}
-
-main! { Game }
+main! { App }

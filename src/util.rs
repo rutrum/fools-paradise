@@ -70,6 +70,7 @@ pub fn perlin(x: f32, y: f32) -> f32 {
 }
 
 /// Stores a random number and provides some basic psuedo-random number generation.
+#[derive(Clone)]
 pub struct Random {
     v: u32,
 }
