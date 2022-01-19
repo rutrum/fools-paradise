@@ -12,6 +12,7 @@ pub struct PowerUp {
     pub pos: (f32, f32),
     pub vel: (f32, f32),
     pub collected: bool,
+    pub movement_counter: u32,
 }
 
 impl PowerUp {
@@ -21,9 +22,10 @@ impl PowerUp {
                 SpriteName::heart,
             ],
             pos: (0.0, -5.0),
-            vel: (0.0, 1.5),
+            vel: (-0.5, 1.5),
             t,
             collected: false,
+            movement_counter: 0,
         }
     }
 }
@@ -47,6 +49,11 @@ impl Entity for PowerUp {
     }
 
     fn update(&mut self, _frame: u32) {
+        self.movement_counter += 1;
+        if self.movement_counter >= 30 {
+            self.movement_counter = 0;
+            self.vel.0 = -self.vel.0;
+        }
         self.advance();
     }
 }

@@ -26,6 +26,7 @@ struct Game {
     controls: Controls,
     player: Player,
     enemies: Vec<Enemy>,
+    turrets: Vec<Turret>,
     bullets: Vec<Bullet>,
     enemy_bullets: Vec<Bullet>,
     powerups: Vec<PowerUp>,
@@ -44,6 +45,7 @@ impl Game {
             controls: Controls::new(),
             bullets: Vec::new(),
             enemies: Vec::new(),
+            turrets: Vec::new(),
             enemy_bullets: Vec::new(),
             player: Player::new(),
             powerups: Vec::new(),
@@ -65,6 +67,7 @@ impl Game {
             self.player.draw();
         }
         self.enemies.iter().for_each(|e| e.draw());
+        self.turrets.iter().for_each(|e| e.draw());
         self.bullets.iter().for_each(|e| e.draw());
         self.enemy_bullets.iter().for_each(|e| e.draw());
         self.powerups.iter().for_each(|e| e.draw());
@@ -80,6 +83,7 @@ impl Game {
     fn update_entities(&mut self) {
         self.player.update(self.frame);
         self.enemies.iter_mut().for_each(|e| e.update(self.frame));
+        self.turrets.iter_mut().for_each(|e| e.update(self.frame));
         self.bullets.iter_mut().for_each(|e| e.update(self.frame));
         self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
         self.powerups.iter_mut().for_each(|e| e.update(self.frame));
@@ -97,6 +101,7 @@ impl Game {
         self.player = Player::new();
         self.enemies = Vec::new();
         self.bullets = Vec::new();
+        self.turrets = Vec::new();
         self.enemy_bullets = Vec::new();
         self.powerups = Vec::new();
         self.play_frame = 0;
@@ -107,6 +112,11 @@ impl Game {
 
     fn cull_entities(&mut self) {
         self.enemies = core::mem::take(&mut self.enemies)
+            .into_iter()
+            .filter(|b| !b.off_screen() && b.alive())
+            .collect();
+
+        self.turrets = core::mem::take(&mut self.turrets)
             .into_iter()
             .filter(|b| !b.off_screen() && b.alive())
             .collect();
@@ -218,6 +228,28 @@ fn gameplay_update(game: &mut Game) {
         }
     }
 
+    for enemy in &mut game.turrets {
+        if enemy.ready_to_shoot() {
+            game.enemy_bullets.append(&mut enemy.shoot());
+        }
+
+        // ensure that bullets pass through dying enemies
+        if !enemy.dying() {
+            for bullet in &mut game.bullets {
+                if enemy.collides_with(bullet) {
+                    enemy.damage(bullet.damage);
+                    if enemy.dying() { game.kills += 1 }
+                    bullet.dead = true;
+                }
+            }
+        }
+
+        if !game.player.dying() && enemy.collides_with(&game.player) {
+            enemy.kill();
+            game.player.damage(1);
+        }
+    }
+
     if !game.player.dying() {
         for bullet in &mut game.enemy_bullets {
             if game.player.collides_with(bullet) {
@@ -251,6 +283,12 @@ fn gameplay_update(game: &mut Game) {
 
     // draw
     game.draw_entities();
+
+    if game.spawn_cooldown <= 0 {
+        let mut enemy = Turret::new(&mut game.random);
+        game.turrets.push(enemy);
+        game.new_spawn_cooldown();
+    }
 
     if game.spawn_cooldown <= 0 {
         let mut enemy = Enemy::new();

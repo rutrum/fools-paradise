@@ -15,6 +15,9 @@ pub use powerup::{PowerUp, PowerType};
 mod enemy;
 pub use enemy::Enemy;
 
+mod turret;
+pub use turret::Turret;
+
 pub trait Shoot {
     /// Create the bullet to be shot
     fn shoot(&mut self) -> Vec<Bullet>;
