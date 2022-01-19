@@ -52,7 +52,6 @@ impl Button {
 }
 
 /// Stores the current and previous gamepad and mouse state
-#[derive(Default, Debug)]
 pub struct Controls {
     gamepad: u8,
     pressed: u8,

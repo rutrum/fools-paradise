@@ -289,7 +289,7 @@ fn gameplay_update(game: &mut Game) {
     }
 
     if game.powerup_cooldown <= 0 {
-        let mut powerup = PowerUp::spawn(&mut game.random, PowerType::Health);
+        let powerup = PowerUp::spawn(&mut game.random, PowerType::Health);
         game.powerups.push(powerup);
         game.powerup_cooldown = 1000;
     }
