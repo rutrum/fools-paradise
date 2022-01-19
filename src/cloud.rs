@@ -12,7 +12,7 @@ pub fn draw(frame: u32, speed: f32) {
         let buf = FRAMEBUFFER.as_mut().unwrap();
 
         for x in 0..160_i32 {
-            for mut y in 0..160_i32 {
+            for y in 0..160_i32 {
                 let offset = (frame as f32 * speed) as i32;
                 if ((y - offset) % 2 == 0) && (x + (y - offset)) % 4 == 0 {
                     let idx = (x + y * 160) / 4;

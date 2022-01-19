@@ -105,14 +105,21 @@ impl Alive for Player {
 }
 
 impl Shoot for Player {
-    fn shoot(&mut self) -> Bullet {
+    fn shoot(&mut self) -> Vec<Bullet> {
         sound::player_fire();
         let mut bullet = Bullet::new((
-            self.x_pos(),
+            self.x_pos() + 4.0,
             self.top() as f32,
         ));
         bullet.vel.1 = -2.0;
-        bullet
+        /*
+        let mut bullet2 = Bullet::new((
+            self.x_pos() - 4.0,
+            self.top() as f32,
+        ));
+        bullet2.vel.1 = -2.0;
+        */
+        vec![bullet]
     }
 
     fn ready_to_shoot(&self) -> bool {

@@ -192,7 +192,7 @@ fn gameplay_update(game: &mut Game) {
     // Check collisions and update
     for enemy in &mut game.enemies {
         if enemy.ready_to_shoot() {
-            game.enemy_bullets.push(enemy.shoot());
+            game.enemy_bullets.append(&mut enemy.shoot());
         }
 
         // ensure that bullets pass through dying enemies
@@ -253,7 +253,7 @@ fn controls_update(game: &mut Game) {
     }
 
     if game.controls.pressed(Button::Primary) {
-        game.bullets.push(player.shoot());
+        game.bullets.append(&mut player.shoot());
     }
 }
 

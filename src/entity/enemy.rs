@@ -63,7 +63,7 @@ impl Alive for Enemy {
 }
 
 impl Shoot for Enemy {
-    fn shoot(&mut self) -> Bullet {
+    fn shoot(&mut self) -> Vec<Bullet> {
         sound::enemy_fire();
         self.fire_counter = 0;
         let mut bullet = Bullet::new((
@@ -71,7 +71,7 @@ impl Shoot for Enemy {
             self.bottom() as f32,
         ));
         bullet.vel.1 = 1.0;
-        bullet
+        vec![bullet]
     }
 
     fn ready_to_shoot(&self) -> bool {

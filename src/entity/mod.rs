@@ -14,7 +14,7 @@ pub use enemy::Enemy;
 
 pub trait Shoot {
     /// Create the bullet to be shot
-    fn shoot(&mut self) -> Bullet;
+    fn shoot(&mut self) -> Vec<Bullet>;
 
     /// Determine if the bullet should be made
     fn ready_to_shoot(&self) -> bool;
