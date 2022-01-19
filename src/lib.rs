@@ -71,9 +71,7 @@ impl Game {
 
         // health
         let heart = SpriteName::heart.get();
-        unsafe {
-            *DRAW_COLORS = 0x330; // backwards to indexed colors
-        }
+        color::set_draw(0x330);
         for x in 0..self.player.health() {
             blit(&heart.data, (x * 8 + 10) as i32, 150, heart.width, heart.height, heart.flags);
         }
@@ -154,17 +152,13 @@ fn menu_update(game: &mut Game) {
     // draw clouds using perlin noise cause why not
     cloud::draw(game.frame, -1.0);
 
-    unsafe {
-        *DRAW_COLORS = 0x03; // backwards to indexed colors
-    }
+    color::set_draw(0x03);
     text("Fool's Paradise", 10, 10);
     text("Start", 10, 130);
 
     let s = SpriteName::enemy1.get();
 
-    unsafe {
-        *DRAW_COLORS = 0x4320; // backwards to indexed colors
-    }
+    color::set_draw(0x4320);
     for (x, y) in [(20, 50), (100, 70), (130, 55), (55, 40), (45, 85)] {
         blit(&s.data, x, y, s.width, s.height, s.flags);
     }
@@ -178,15 +172,11 @@ fn menu_update(game: &mut Game) {
 fn gameplay_update(game: &mut Game) {
     if game.player.alive() {
         controls_update(game);
-        unsafe {
-            *DRAW_COLORS = 0x02; // backwards to indexed colors
-        }
+        color::set_draw(0x02);
         text(game.score().to_string(), 1, 1);
         game.play_frame += 1;
     } else {
-        unsafe {
-            *DRAW_COLORS = 0x03; // backwards to indexed colors
-        }
+        color::set_draw(0x03);
         text("Final score:", 20, 50);
         text(game.score().to_string(), 120, 50);
         text("Total kills:", 20, 60);

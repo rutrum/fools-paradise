@@ -21,3 +21,9 @@ impl Palette {
         }
     }
 }
+
+pub fn set_draw(v: u16) {
+    unsafe {
+        *DRAW_COLORS = v;
+    }
+}
