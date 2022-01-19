@@ -12,8 +12,8 @@ pub use bullet::Bullet;
 mod powerup;
 pub use powerup::{PowerUp, PowerType};
 
-mod enemy;
-pub use enemy::Enemy;
+mod blaster;
+pub use blaster::Blaster;
 
 mod turret;
 pub use turret::Turret;

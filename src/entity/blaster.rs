@@ -10,7 +10,7 @@ pub enum EnemyState {
 }
 
 #[derive(Clone, Debug)]
-pub struct Enemy {
+pub struct Blaster {
     pub sprites: Vec<Sprite>,
     pub state: EnemyState,
     pub pos: (f32, f32),
@@ -20,7 +20,7 @@ pub struct Enemy {
     health: u32,
 }
 
-impl Enemy {
+impl Blaster {
     pub fn spawn(random: &mut Random) -> Self {
         let x = random.in_range(8, 160 - 8) as f32;
         Self {
@@ -40,7 +40,7 @@ impl Enemy {
     }
 }
 
-impl Alive for Enemy {
+impl Alive for Blaster {
     fn dead(&self) -> bool {
         self.death_counter > 20
     }
@@ -64,7 +64,7 @@ impl Alive for Enemy {
     }
 }
 
-impl Shoot for Enemy {
+impl Shoot for Blaster {
     fn shoot(&mut self) -> Vec<Bullet> {
         if self.fire_counter > 60 {
 
@@ -82,7 +82,7 @@ impl Shoot for Enemy {
     }
 }
 
-impl Render for Enemy {
+impl Render for Blaster {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
 
@@ -101,7 +101,7 @@ impl Render for Enemy {
     }
 }
 
-impl Movement for Enemy {
+impl Movement for Blaster {
     fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
     fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
     fn x_vel(&self) -> f32 { self.vel.0 }
