@@ -271,32 +271,25 @@ fn gameplay_update(game: &mut Game) {
         }
     }
 
-    /*let total_entities = 1 + game.bullets.len() + game.enemy_bullets.len()
-        + game.enemies.len() + game.powerups.len();
-    text(total_entities.to_string(), 50, 50);
-    */
-
     game.cull_entities();
 
     // draw
     game.draw_entities();
 
     if game.spawn_cooldown <= 0 {
-        let enemy = Turret::new(&mut game.random);
+        let enemy = Turret::spawn(&mut game.random);
         game.turrets.push(enemy);
         game.new_spawn_cooldown();
     }
 
     if game.spawn_cooldown <= 0 {
-        let mut enemy = Enemy::new();
-        *enemy.x_pos_mut() = game.random.in_range(8, 160 - 8) as f32;
+        let enemy = Enemy::spawn(&mut game.random);
         game.enemies.push(enemy);
         game.new_spawn_cooldown();
     }
 
     if game.powerup_cooldown <= 0 {
-        let mut powerup = PowerUp::new(PowerType::Health);
-        *powerup.x_pos_mut() = game.random.in_range(20, 160 - 20) as f32;
+        let mut powerup = PowerUp::spawn(&mut game.random, PowerType::Health);
         game.powerups.push(powerup);
         game.powerup_cooldown = 1000;
     }

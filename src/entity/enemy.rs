@@ -1,6 +1,7 @@
 use super::*;
 use crate::Sprite;
 use crate::sound;
+use crate::Random;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum EnemyState {
@@ -20,7 +21,8 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn new() -> Self {
+    pub fn spawn(random: &mut Random) -> Self {
+        let x = random.in_range(8, 160 - 8) as f32;
         Self {
             sprites: vec![
                 Sprite::enemy1,
@@ -29,7 +31,7 @@ impl Enemy {
                 Sprite::enemy4,
             ],
             state: EnemyState::Stationary,
-            pos: (80.0, -5.0),
+            pos: (x, -5.0),
             vel: (0.0, 1.0),
             fire_counter: 60,
             death_counter: 0,

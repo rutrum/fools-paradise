@@ -1,6 +1,7 @@
 use crate::Sprite;
 use crate::util;
 use crate::color;
+use crate::Random;
 
 mod player;
 pub use player::Player;
@@ -18,7 +19,6 @@ mod turret;
 pub use turret::Turret;
 
 pub trait Movement : Render {
-
     /// Mutable reference to the true x position.
     fn x_pos_mut(&mut self) -> &mut f32;
 

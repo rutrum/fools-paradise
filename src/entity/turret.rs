@@ -24,7 +24,7 @@ pub struct Turret {
 }
 
 impl Turret {
-    pub fn new(random: &mut Random) -> Self {
+    pub fn spawn(random: &mut Random) -> Self {
         let rand_x = random.in_range(20, 140) as f32;
         Self {
             sprites: vec![
