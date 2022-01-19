@@ -1,7 +1,9 @@
 use super::*;
 
+#[derive(Clone, PartialEq, Debug)]
 pub enum PowerType {
     Health,
+    Spreader,
 }
 
 pub struct PowerUp {
@@ -38,6 +40,7 @@ impl Entity for PowerUp {
         use PowerType::*;
         let idx = match self.t {
             Health => 0,
+            Spreader => 0,
         };
 
         self.sprites[idx]

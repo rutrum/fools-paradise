@@ -30,7 +30,7 @@ impl Enemy {
             ],
             state: EnemyState::Stationary,
             pos: (80.0, -5.0),
-            vel: (0.0, 0.5),
+            vel: (0.0, 1.0),
             fire_counter: 60,
             death_counter: 0,
             health: 1,
@@ -70,12 +70,12 @@ impl Shoot for Enemy {
             self.x_pos(),
             self.bottom() as f32,
         ));
-        bullet.vel.1 = 1.0;
+        bullet.vel.1 = 2.0;
         vec![bullet]
     }
 
     fn ready_to_shoot(&self) -> bool {
-        self.fire_counter > 120
+        self.fire_counter > 60
     }
 }
 

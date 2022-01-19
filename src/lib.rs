@@ -51,7 +51,7 @@ impl Game {
             play_frame: 0,
             random: Random::seed(0),
             spawn_cooldown: 1,
-            powerup_cooldown: 100,
+            powerup_cooldown: 1000,
             kills: 0,
         }
     }
@@ -103,7 +103,8 @@ impl Game {
         self.powerups = Vec::new();
         self.play_frame = 0;
         self.spawn_cooldown = 1;
-        self.powerup_cooldown = 3000;
+        self.powerup_cooldown = 1000;
+        self.kills = 0;
     }
 
     fn cull_entities(&mut self) {
@@ -186,11 +187,13 @@ fn gameplay_update(game: &mut Game) {
         unsafe {
             *DRAW_COLORS = 0x03; // backwards to indexed colors
         }
-        text("Final score:", 30, 50);
-        text(game.score().to_string(), 30, 60);
+        text("Final score:", 20, 50);
+        text(game.score().to_string(), 120, 50);
+        text("Total kills:", 20, 60);
+        text(game.kills.to_string(), 120, 60);
 
-        text("Press action to", 30, 100);
-        text("play again.", 30, 110);
+        text("Press action to", 20, 100);
+        text("play again.", 20, 110);
 
         if game.controls.pressed_or_held(Button::Primary) {
             game.restart();
@@ -240,10 +243,19 @@ fn gameplay_update(game: &mut Game) {
                         game.player.health += 1;
                         powerup.collected = true;
                     }
+                    PowerType::Spreader => {
+                        game.player.power_up(PowerType::Spreader);
+                        powerup.collected = true;
+                    }
                 }
             }
         }
     }
+
+    /*let total_entities = 1 + game.bullets.len() + game.enemy_bullets.len()
+        + game.enemies.len() + game.powerups.len();
+    text(total_entities.to_string(), 50, 50);
+    */
 
     game.cull_entities();
 
@@ -261,7 +273,7 @@ fn gameplay_update(game: &mut Game) {
         let mut powerup = PowerUp::new(PowerType::Health);
         *powerup.x_pos_mut() = game.random.in_range(20, 160 - 20) as f32;
         game.powerups.push(powerup);
-        game.powerup_cooldown = 3000;
+        game.powerup_cooldown = 1000;
     }
 }
 

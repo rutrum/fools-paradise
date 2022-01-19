@@ -1,6 +1,7 @@
 use super::*;
 use crate::SpriteName;
 use crate::sound;
+use crate::PowerType;
 
 const TURN_FRAMES: i32 = 15;
 
@@ -24,6 +25,7 @@ pub struct Player {
     death_counter: u32,
     invincible_counter: u32,
     pub health: u32,
+    pub powerups: Vec<PowerType>,
 }
 
 impl Player {
@@ -47,7 +49,12 @@ impl Player {
             death_counter: 0,
             invincible_counter: 0,
             health: 3,
+            powerups: Vec::new(),
         }
+    }
+    
+    pub fn power_up(&mut self, powerup: PowerType) {
+        self.powerups.push(powerup);
     }
 
     pub fn move_left(&mut self) {
@@ -107,18 +114,28 @@ impl Shoot for Player {
     fn shoot(&mut self) -> Vec<Bullet> {
         sound::player_fire();
         let mut bullet = Bullet::new((
-            self.x_pos() + 4.0,
+            self.x_pos(),
             self.top() as f32,
         ));
         bullet.vel.1 = -2.0;
-        /*
-        let mut bullet2 = Bullet::new((
-            self.x_pos() - 4.0,
-            self.top() as f32,
-        ));
-        bullet2.vel.1 = -2.0;
-        */
-        vec![bullet]
+        if self.powerups.iter().any(|t| *t == PowerType::Spreader) {
+            sound::player_fire();
+            let mut bullet2 = Bullet::new((
+                self.x_pos() - 4.0,
+                self.top() as f32,
+            ));
+            bullet2.vel.1 = -2.0;
+            bullet2.vel.0 = -0.5;
+            let mut bullet3 = Bullet::new((
+                self.x_pos() + 4.0,
+                self.top() as f32,
+            ));
+            bullet3.vel.1 = -2.0;
+            bullet3.vel.0 = 0.5;
+            vec![bullet, bullet2, bullet3]
+        } else {
+            vec![bullet]
+        }
     }
 
     fn ready_to_shoot(&self) -> bool {
