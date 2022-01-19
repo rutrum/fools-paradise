@@ -1,4 +1,4 @@
-use crate::SpriteName;
+use crate::Sprite;
 use crate::util;
 use crate::color;
 
@@ -60,7 +60,7 @@ pub trait Movement : Render {
 pub trait Render {
 
     /// The sprite to render in the default draw implementation.
-    fn sprite(&self) -> SpriteName;
+    fn sprite(&self) -> Sprite;
 
     /// Get the true x position (center).
     fn x_pos(&self) -> f32;

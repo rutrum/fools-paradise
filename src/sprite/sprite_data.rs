@@ -63,9 +63,9 @@ pub enum Sprite {
     turret,
 }
 
-impl SpriteName {
+impl Sprite {
     pub fn get(self) -> SpriteData {
-        use SpriteName::*;
+        use Sprite::*;
         match self {
             arrow => SpriteData {
                 width: 8,

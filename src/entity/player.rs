@@ -1,5 +1,5 @@
 use super::*;
-use crate::SpriteName;
+use crate::Sprite;
 use crate::sound;
 use crate::PowerType;
 use crate::color;
@@ -18,7 +18,7 @@ pub enum PlayerState {
 
 #[derive(Clone, Debug)]
 pub struct Player {
-    pub sprites: Vec<SpriteName>,
+    pub sprites: Vec<Sprite>,
     pub state: PlayerState,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
@@ -33,15 +33,15 @@ impl Player {
     pub fn new() -> Self {
         Self {
             sprites: vec![
-                SpriteName::ship1,
-                SpriteName::ship2,
-                SpriteName::ship3,
-                SpriteName::ship4,
-                SpriteName::ship5,
-                SpriteName::ship6,
-                SpriteName::ship7,
-                SpriteName::ship8,
-                SpriteName::ship9,
+                Sprite::ship1,
+                Sprite::ship2,
+                Sprite::ship3,
+                Sprite::ship4,
+                Sprite::ship5,
+                Sprite::ship6,
+                Sprite::ship7,
+                Sprite::ship8,
+                Sprite::ship9,
             ],
             state: PlayerState::Stationary,
             pos: (80.0, 120.0),
@@ -144,7 +144,7 @@ impl Render for Player {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
 
-    fn sprite(&self) -> SpriteName { 
+    fn sprite(&self) -> Sprite { 
         use PlayerState::*;
         let idx = match self.state {
             Stationary => 0,

@@ -1,5 +1,5 @@
 use super::*;
-use crate::SpriteName;
+use crate::Sprite;
 use crate::sound;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -10,7 +10,7 @@ pub enum EnemyState {
 
 #[derive(Clone, Debug)]
 pub struct Enemy {
-    pub sprites: Vec<SpriteName>,
+    pub sprites: Vec<Sprite>,
     pub state: EnemyState,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
@@ -23,10 +23,10 @@ impl Enemy {
     pub fn new() -> Self {
         Self {
             sprites: vec![
-                SpriteName::enemy1,
-                SpriteName::enemy2,
-                SpriteName::enemy3,
-                SpriteName::enemy4,
+                Sprite::enemy1,
+                Sprite::enemy2,
+                Sprite::enemy3,
+                Sprite::enemy4,
             ],
             state: EnemyState::Stationary,
             pos: (80.0, -5.0),
@@ -84,7 +84,7 @@ impl Render for Enemy {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
 
-    fn sprite(&self) -> SpriteName { 
+    fn sprite(&self) -> Sprite { 
         use EnemyState::*;
         let idx = match self.state {
             Stationary => 0,

@@ -74,7 +74,7 @@ impl Game {
         self.powerups.iter().for_each(|e| e.draw());
 
         // health
-        let heart = SpriteName::heart.get();
+        let heart = Sprite::heart.get();
         color::set_draw(0x330);
         for x in 0..self.player.health() {
             blit(&heart.data, (x * 8 + 10) as i32, 150, heart.width, heart.height, heart.flags);
@@ -167,7 +167,7 @@ fn menu_update(game: &mut Game) {
     text("Fool's Paradise", 10, 10);
     text("Start", 10, 130);
 
-    let s = SpriteName::enemy1.get();
+    let s = Sprite::enemy1.get();
 
     color::set_draw(0x4320);
     for (x, y) in [(20, 50), (100, 70), (130, 55), (55, 40), (45, 85)] {

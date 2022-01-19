@@ -1,18 +1,19 @@
-mod sprite_name;
-pub use sprite_name::SpriteName;
+mod sprite_data;
+pub use sprite_data::Sprite;
+
 use crate::wasm4::sys::*;
 
 use crate::util;
 
 #[derive(Debug, Clone, Default)]
-pub struct Sprite {
+pub struct SpriteData {
     pub width: u32,
     pub height: u32,
     pub flags: u32,
     pub data: Vec<u8>,
 }
 
-impl Sprite {
+impl SpriteData {
     pub fn range_iterator(&self, left: i32, right: i32, top: i32, bottom: i32) -> SpriteIterator {
         SpriteIterator {
             left: left as u32, 
@@ -50,7 +51,7 @@ impl Sprite {
     }
 }
 
-impl IntoIterator for Sprite {
+impl IntoIterator for SpriteData {
     type IntoIter = SpriteIterator;
     type Item = u8;
     
@@ -67,7 +68,7 @@ impl IntoIterator for Sprite {
 }
 
 pub struct SpriteIterator {
-    sprite: Sprite,
+    sprite: SpriteData,
     left: u32,
     width: u32,
     top: u32,

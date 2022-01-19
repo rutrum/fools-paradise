@@ -8,7 +8,7 @@ pub enum PowerType {
 
 pub struct PowerUp {
     pub t: PowerType,
-    pub sprites: Vec<SpriteName>,
+    pub sprites: Vec<Sprite>,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
     pub collected: bool,
@@ -19,7 +19,7 @@ impl PowerUp {
     pub fn new(t: PowerType) -> Self {
         Self {
             sprites: vec![
-                SpriteName::heart,
+                Sprite::heart,
             ],
             pos: (0.0, -5.0),
             vel: (-0.5, 1.5),
@@ -34,7 +34,7 @@ impl Render for PowerUp {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
 
-    fn sprite(&self) -> SpriteName { 
+    fn sprite(&self) -> Sprite { 
         use PowerType::*;
         let idx = match self.t {
             Health => 0,
@@ -60,32 +60,3 @@ impl Movement for PowerUp {
         self.advance();
     }
 }
-/*
-impl Entity for PowerUp {
-    fn x_pos(&self) -> f32 { self.pos.0 }
-    fn y_pos(&self) -> f32 { self.pos.1 }
-    fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
-    fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
-    fn x_vel(&self) -> f32 { self.vel.0 }
-    fn y_vel(&self) -> f32 { self.vel.1 }
-
-    fn sprite_name(&self) -> SpriteName { 
-        use PowerType::*;
-        let idx = match self.t {
-            Health => 0,
-            Spreader => 0,
-        };
-
-        self.sprites[idx]
-    }
-
-    fn update(&mut self, _frame: u32) {
-        self.movement_counter += 1;
-        if self.movement_counter >= 30 {
-            self.movement_counter = 0;
-            self.vel.0 = -self.vel.0;
-        }
-        self.advance();
-    }
-}
-*/

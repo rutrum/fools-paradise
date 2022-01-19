@@ -1,5 +1,5 @@
 use super::*;
-use crate::SpriteName;
+use crate::Sprite;
 use crate::sound;
 use crate::Random;
 
@@ -13,7 +13,7 @@ pub enum State {
 /// Moves into position and then continues fire
 #[derive(Clone, Debug)]
 pub struct Turret {
-    pub sprites: Vec<SpriteName>,
+    pub sprites: Vec<Sprite>,
     pub state: State,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
@@ -28,7 +28,7 @@ impl Turret {
         let rand_x = random.in_range(20, 140) as f32;
         Self {
             sprites: vec![
-                SpriteName::turret,
+                Sprite::turret,
             ],
             state: State::Stationary,
             pos: (rand_x, -5.0),
@@ -86,7 +86,7 @@ impl Render for Turret {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
 
-    fn sprite(&self) -> SpriteName { 
+    fn sprite(&self) -> Sprite { 
         use State::*;
         let idx = match self.state {
             _ => 0,

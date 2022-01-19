@@ -1,6 +1,6 @@
 cart-name := "cart"
 out-name := "fools_paradise"
-sprite_out_file := "src/sprite/sprite_name.rs"
+sprite_out_file := "src/sprite/sprite_data.rs"
 
 default: watch
 

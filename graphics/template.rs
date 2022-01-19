@@ -1,19 +1,19 @@
-use crate::Sprite;
+use crate::SpriteData;
 
 #[derive(Clone, Copy, Debug)]
-pub enum SpriteName {
+pub enum Sprite {
 {{#sprites}}
     #[allow(non_camel_case_types)]
     {{name}},
 {{/sprites}}
 }
 
-impl SpriteName {
-    pub fn get(self) -> Sprite {
-        use SpriteName::*;
+impl Sprite {
+    pub fn get(self) -> SpriteData {
+        use Sprite::*;
         match self {
 {{#sprites}}
-            {{name}} => Sprite {
+            {{name}} => SpriteData {
                 width: {{width}},
                 height: {{height}},
                 flags: {{flags}},
