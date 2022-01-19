@@ -1,5 +1,4 @@
 use super::*;
-use crate::Sprite;
 use crate::SpriteName;
 use crate::sound;
 
@@ -24,7 +23,7 @@ pub struct Player {
     pub movement_counter: i32,
     death_counter: u32,
     invincible_counter: u32,
-    health: u32,
+    pub health: u32,
 }
 
 impl Player {

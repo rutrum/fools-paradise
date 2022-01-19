@@ -15,10 +15,13 @@
 
 
 
+
 use crate::Sprite;
 
 #[derive(Clone, Copy, Debug)]
 pub enum SpriteName {
+    #[allow(non_camel_case_types)]
+    arrow,
     #[allow(non_camel_case_types)]
     bullet1,
     #[allow(non_camel_case_types)]
@@ -61,6 +64,12 @@ impl SpriteName {
     pub fn get(self) -> Sprite {
         use SpriteName::*;
         match self {
+            arrow => Sprite {
+                width: 8,
+                height: 8,
+                flags: 0,
+                data: vec![ 0x60,0x70,0x78,0x7c,0x7c,0x78,0x70,0x60 ],
+            },
             bullet1 => Sprite {
                 width: 4,
                 height: 4,

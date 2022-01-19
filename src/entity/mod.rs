@@ -9,6 +9,9 @@ pub use player::Player;
 mod bullet;
 pub use bullet::Bullet;
 
+mod powerup;
+pub use powerup::{PowerUp, PowerType};
+
 mod enemy;
 pub use enemy::Enemy;
 

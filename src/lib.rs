@@ -13,10 +13,8 @@ mod sprite;
 pub use sprite::*;
 
 mod sound;
-
+mod color;
 mod cloud;
-
-const CRIMSON_PALETTE: [u32; 4] = [ 0xeff9d6, 0xba5044, 0x7a1c4b, 0x1b0326 ];
 
 enum GameState {
     Menu,
@@ -30,15 +28,36 @@ struct Game {
     enemies: Vec<Enemy>,
     bullets: Vec<Bullet>,
     enemy_bullets: Vec<Bullet>,
+    powerups: Vec<PowerUp>,
     frame: u32,
     play_frame: u32,
     random: Random,
     spawn_cooldown: i32,
+    kills: u32,
+    powerup_cooldown: i32,
 }
 
 impl Game {
+    fn new() -> Self {
+        Self {
+            state: GameState::Menu,
+            controls: Controls::new(),
+            bullets: Vec::new(),
+            enemies: Vec::new(),
+            enemy_bullets: Vec::new(),
+            player: Player::new(),
+            powerups: Vec::new(),
+            frame: 0,
+            play_frame: 0,
+            random: Random::seed(0),
+            spawn_cooldown: 1,
+            powerup_cooldown: 100,
+            kills: 0,
+        }
+    }
+    
     fn score(&self) -> u32 {
-        self.play_frame / 10
+        self.play_frame / 10 + 10 * self.kills
     }
 
     fn draw_entities(&self) {
@@ -48,6 +67,7 @@ impl Game {
         self.enemies.iter().for_each(|e| e.draw());
         self.bullets.iter().for_each(|e| e.draw());
         self.enemy_bullets.iter().for_each(|e| e.draw());
+        self.powerups.iter().for_each(|e| e.draw());
 
         // health
         let heart = SpriteName::heart.get();
@@ -64,6 +84,7 @@ impl Game {
         self.enemies.iter_mut().for_each(|e| e.update(self.frame));
         self.bullets.iter_mut().for_each(|e| e.update(self.frame));
         self.enemy_bullets.iter_mut().for_each(|e| e.update(self.frame));
+        self.powerups.iter_mut().for_each(|e| e.update(self.frame));
     }
 
     fn new_spawn_cooldown(&mut self) {
@@ -79,8 +100,10 @@ impl Game {
         self.enemies = Vec::new();
         self.bullets = Vec::new();
         self.enemy_bullets = Vec::new();
+        self.powerups = Vec::new();
         self.play_frame = 0;
         self.spawn_cooldown = 1;
+        self.powerup_cooldown = 3000;
     }
 
     fn cull_entities(&mut self) {
@@ -98,33 +121,25 @@ impl Game {
             .into_iter()
             .filter(|b| !b.off_screen() && !b.dead)
             .collect();
+
+        self.powerups = core::mem::take(&mut self.powerups)
+            .into_iter()
+            .filter(|b| !b.off_screen() && !b.collected)
+            .collect();
     }
 }
 
 impl Runtime for Game {
     fn start() -> Self {
-        unsafe {
-            *PALETTE = CRIMSON_PALETTE;
-        }
-
-        Game {
-            state: GameState::Menu,
-            controls: Controls::new(),
-            bullets: Vec::new(),
-            enemies: Vec::new(),
-            enemy_bullets: Vec::new(),
-            player: Player::new(),
-            frame: 0,
-            play_frame: 0,
-            random: Random::seed(0),
-            spawn_cooldown: 1,
-        }
+        color::Palette::Crimson.set();
+        Game::new()
     }
 
     fn update(&mut self) {
         self.controls.next();
         self.frame += 1;
         self.spawn_cooldown -= 1;
+        self.powerup_cooldown -= 1;
 
         use GameState::*;
         match self.state {
@@ -142,8 +157,7 @@ fn menu_update(game: &mut Game) {
         *DRAW_COLORS = 0x03; // backwards to indexed colors
     }
     text("Fool's Paradise", 10, 10);
-    text("Press action", 10, 130);
-    text("button to start", 10, 140);
+    text("Start", 10, 130);
 
     let s = SpriteName::enemy1.get();
 
@@ -158,7 +172,6 @@ fn menu_update(game: &mut Game) {
         game.random = Random::seed(game.frame);
         game.state = GameState::Playing;
     }
-
 }
 
 fn gameplay_update(game: &mut Game) {
@@ -200,6 +213,7 @@ fn gameplay_update(game: &mut Game) {
             for bullet in &mut game.bullets {
                 if enemy.collides_with(bullet) {
                     enemy.damage(bullet.damage);
+                    if enemy.dying() { game.kills += 1 }
                     bullet.dead = true;
                 }
             }
@@ -218,6 +232,17 @@ fn gameplay_update(game: &mut Game) {
                 bullet.dead = true;
             }
         }
+
+        for powerup in &mut game.powerups {
+            if game.player.collides_with(powerup) {
+                match powerup.t {
+                    PowerType::Health => {
+                        game.player.health += 1;
+                        powerup.collected = true;
+                    }
+                }
+            }
+        }
     }
 
     game.cull_entities();
@@ -230,6 +255,13 @@ fn gameplay_update(game: &mut Game) {
         *enemy.x_pos_mut() = game.random.in_range(8, 160 - 8) as f32;
         game.enemies.push(enemy);
         game.new_spawn_cooldown();
+    }
+
+    if game.powerup_cooldown <= 0 {
+        let mut powerup = PowerUp::new(PowerType::Health);
+        *powerup.x_pos_mut() = game.random.in_range(20, 160 - 20) as f32;
+        game.powerups.push(powerup);
+        game.powerup_cooldown = 3000;
     }
 }
 

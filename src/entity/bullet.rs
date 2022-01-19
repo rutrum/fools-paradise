@@ -1,5 +1,4 @@
 use crate::entity::Entity;
-use crate::sprite::Sprite;
 use crate::SpriteName;
 
 const ANIMATION_SPEED: u32 = 10;  // frames between states

@@ -9,8 +9,6 @@ My submission for the WASM-4 Game Jam 2022.
 * powerups (spreader)
 * add variety to bullet shots
 * scores
-* music enable/disable on main menu
-* sound enable/disable on main menu
 * logo
 
 ## Big feature idea: daynight cycle

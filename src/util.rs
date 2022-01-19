@@ -93,11 +93,6 @@ impl Random {
         self.v = v;
     }
 
-    pub fn bool(&mut self) -> bool {
-        self.next();
-        self.v % 2 == 0
-    }
-
     fn float(&mut self) -> f32 {
         self.next();
         self.v as f32 / u32::MAX as f32
