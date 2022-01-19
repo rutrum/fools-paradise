@@ -18,13 +18,6 @@ pub use blaster::Blaster;
 mod turret;
 pub use turret::Turret;
 
-/*
-pub enum EnemyType {
-    Simple(Enemy),
-    Turret(Turret),
-}
-*/
-
 pub trait Movement : Render {
     /// Mutable reference to the true x position.
     fn x_pos_mut(&mut self) -> &mut f32;
