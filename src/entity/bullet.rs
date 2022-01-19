@@ -1,5 +1,5 @@
-use crate::entity::Entity;
 use crate::SpriteName;
+use super::*;
 
 const ANIMATION_SPEED: u32 = 10;  // frames between states
 
@@ -36,17 +36,20 @@ impl Bullet {
     }
 }
 
-impl Entity for Bullet {
+impl Render for Bullet {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
+
+    fn sprite(&self) -> SpriteName { 
+        self.sprites[self.state as usize % 4]
+    }
+}
+
+impl Movement for Bullet {
     fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
     fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
     fn x_vel(&self) -> f32 { self.vel.0 }
     fn y_vel(&self) -> f32 { self.vel.1 }
-
-    fn sprite_name(&self) -> SpriteName { 
-        self.sprites[self.state as usize % 4]
-    }
 
     fn update(&mut self, _frame: u32) { 
         self.counter += 1;

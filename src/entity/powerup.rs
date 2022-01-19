@@ -30,6 +30,37 @@ impl PowerUp {
     }
 }
 
+impl Render for PowerUp {
+    fn x_pos(&self) -> f32 { self.pos.0 }
+    fn y_pos(&self) -> f32 { self.pos.1 }
+
+    fn sprite(&self) -> SpriteName { 
+        use PowerType::*;
+        let idx = match self.t {
+            Health => 0,
+            Spreader => 0,
+        };
+
+        self.sprites[idx]
+    }
+}
+
+impl Movement for PowerUp {
+    fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
+    fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
+    fn x_vel(&self) -> f32 { self.vel.0 }
+    fn y_vel(&self) -> f32 { self.vel.1 }
+
+    fn update(&mut self, _frame: u32) {
+        self.movement_counter += 1;
+        if self.movement_counter >= 30 {
+            self.movement_counter = 0;
+            self.vel.0 = -self.vel.0;
+        }
+        self.advance();
+    }
+}
+/*
 impl Entity for PowerUp {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
@@ -57,3 +88,4 @@ impl Entity for PowerUp {
         self.advance();
     }
 }
+*/

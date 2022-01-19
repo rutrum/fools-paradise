@@ -1,5 +1,6 @@
 mod sprite_name;
 pub use sprite_name::SpriteName;
+use crate::wasm4::sys::*;
 
 use crate::util;
 
@@ -34,6 +35,18 @@ impl Sprite {
             byte_offset as usize * 2, 
             (byte_offset as usize + 1) * 2,
         )
+    }
+
+    /// Draws the current sprite with the top left pixel at (x, y)
+    pub fn draw(&self, x: i32, y: i32) {
+        blit(
+            &self.data, 
+            x,
+            y,
+            self.width, 
+            self.height, 
+            self.flags,
+        );
     }
 }
 

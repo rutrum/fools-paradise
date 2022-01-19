@@ -2,6 +2,7 @@ use super::*;
 use crate::SpriteName;
 use crate::sound;
 use crate::PowerType;
+use crate::color;
 
 const TURN_FRAMES: i32 = 15;
 
@@ -137,21 +138,13 @@ impl Shoot for Player {
             vec![bullet]
         }
     }
-
-    fn ready_to_shoot(&self) -> bool {
-        true
-    }
 }
 
-impl Entity for Player {
+impl Render for Player {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
-    fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
-    fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
-    fn x_vel(&self) -> f32 { self.vel.0 }
-    fn y_vel(&self) -> f32 { self.vel.1 }
 
-    fn sprite_name(&self) -> SpriteName { 
+    fn sprite(&self) -> SpriteName { 
         use PlayerState::*;
         let idx = match self.state {
             Stationary => 0,
@@ -169,6 +162,20 @@ impl Entity for Player {
         };
         self.sprites[idx] 
     }
+
+    fn draw(&self) {
+        if (self.invincible_counter / 5) % 2 == 0 {
+            color::set_draw(0x4320);
+            self.sprite().get().draw(self.left(), self.top());
+        }
+    }
+}
+
+impl Movement for Player {
+    fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
+    fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
+    fn x_vel(&self) -> f32 { self.vel.0 }
+    fn y_vel(&self) -> f32 { self.vel.1 }
 
     fn update(&mut self, _: u32) { 
         // dying? something different
@@ -210,27 +217,7 @@ impl Entity for Player {
             Stationary
         };
 
-        self.advance();
-
-        // Make sure can't go off screen
-
-        if self.y_pos() > 160.0 { *self.y_pos_mut() = 160.0 }
-        if self.y_pos() < 0.0 { *self.y_pos_mut() = 0.0 }
+        self.advance_bounded(true, true);
     }
 
-    fn draw(&self) {
-        if (self.invincible_counter / 5) % 2 == 0 {
-            unsafe {
-                *DRAW_COLORS = 0x4320; // backwards to indexed colors
-            }
-            blit(
-                &self.sprite().data, 
-                self.left(), 
-                self.top(), 
-                self.sprite().width, 
-                self.sprite().height, 
-                self.sprite().flags
-            );
-        }
-    }
 }

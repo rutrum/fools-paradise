@@ -15,6 +15,7 @@ pub use sprite::*;
 mod sound;
 mod color;
 mod cloud;
+mod game;
 
 enum GameState {
     Menu,
@@ -63,7 +64,7 @@ impl Game {
     }
 
     fn draw_entities(&self) {
-        if self.player.alive() {
+        if !self.player.dead() {
             self.player.draw();
         }
         self.enemies.iter().for_each(|e| e.draw());
@@ -113,12 +114,12 @@ impl Game {
     fn cull_entities(&mut self) {
         self.enemies = core::mem::take(&mut self.enemies)
             .into_iter()
-            .filter(|b| !b.off_screen() && b.alive())
+            .filter(|b| !b.off_screen() && !b.dead())
             .collect();
 
         self.turrets = core::mem::take(&mut self.turrets)
             .into_iter()
-            .filter(|b| !b.off_screen() && b.alive())
+            .filter(|b| !b.off_screen() && !b.dead())
             .collect();
 
         self.bullets = core::mem::take(&mut self.bullets)
@@ -180,7 +181,7 @@ fn menu_update(game: &mut Game) {
 }
 
 fn gameplay_update(game: &mut Game) {
-    if game.player.alive() {
+    if !game.player.dead() {
         controls_update(game);
         color::set_draw(0x02);
         text(game.score().to_string(), 1, 1);
@@ -207,9 +208,7 @@ fn gameplay_update(game: &mut Game) {
 
     // Check collisions and update
     for enemy in &mut game.enemies {
-        if enemy.ready_to_shoot() {
-            game.enemy_bullets.append(&mut enemy.shoot());
-        }
+        game.enemy_bullets.append(&mut enemy.shoot());
 
         // ensure that bullets pass through dying enemies
         if !enemy.dying() {
@@ -229,9 +228,7 @@ fn gameplay_update(game: &mut Game) {
     }
 
     for enemy in &mut game.turrets {
-        if enemy.ready_to_shoot() {
-            game.enemy_bullets.append(&mut enemy.shoot());
-        }
+        game.enemy_bullets.append(&mut enemy.shoot());
 
         // ensure that bullets pass through dying enemies
         if !enemy.dying() {
@@ -285,7 +282,7 @@ fn gameplay_update(game: &mut Game) {
     game.draw_entities();
 
     if game.spawn_cooldown <= 0 {
-        let mut enemy = Turret::new(&mut game.random);
+        let enemy = Turret::new(&mut game.random);
         game.turrets.push(enemy);
         game.new_spawn_cooldown();
     }

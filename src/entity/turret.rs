@@ -33,7 +33,7 @@ impl Turret {
             state: State::Stationary,
             pos: (rand_x, -5.0),
             vel: (0.0, 0.5),
-            fire_counter: 60,
+            fire_counter: 0,
             death_counter: 0,
             health: 2,
             target_height: random.in_range(20, 100) as f32,
@@ -67,30 +67,26 @@ impl Alive for Turret {
 
 impl Shoot for Turret {
     fn shoot(&mut self) -> Vec<Bullet> {
-        sound::enemy_fire();
-        self.fire_counter = 0;
-        let mut bullet = Bullet::new((
-            self.x_pos(),
-            self.bottom() as f32,
-        ));
-        bullet.vel.1 = 2.0;
-        vec![bullet]
-    }
-
-    fn ready_to_shoot(&self) -> bool {
-        self.fire_counter > 60
+        if self.fire_counter > 120 {
+            sound::enemy_fire();
+            self.fire_counter = 0;
+            let mut bullet = Bullet::new((
+                self.x_pos(),
+                self.bottom() as f32,
+            ));
+            bullet.vel.1 = 2.0;
+            vec![bullet]
+        } else {
+            vec![]
+        }
     }
 }
 
-impl Entity for Turret {
+impl Render for Turret {
     fn x_pos(&self) -> f32 { self.pos.0 }
     fn y_pos(&self) -> f32 { self.pos.1 }
-    fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
-    fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
-    fn x_vel(&self) -> f32 { self.vel.0 }
-    fn y_vel(&self) -> f32 { self.vel.1 }
 
-    fn sprite_name(&self) -> SpriteName { 
+    fn sprite(&self) -> SpriteName { 
         use State::*;
         let idx = match self.state {
             _ => 0,
@@ -98,6 +94,13 @@ impl Entity for Turret {
 
         self.sprites[idx]
     }
+}
+
+impl Movement for Turret {
+    fn x_pos_mut(&mut self) -> &mut f32 { &mut self.pos.0 }
+    fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
+    fn x_vel(&self) -> f32 { self.vel.0 }
+    fn y_vel(&self) -> f32 { self.vel.1 }
 
     fn update(&mut self, _: u32) { 
         if self.y_pos() > self.target_height {
