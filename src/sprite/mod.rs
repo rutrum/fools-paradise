@@ -58,9 +58,9 @@ impl IntoIterator for SpriteData {
     fn into_iter(self) -> Self::IntoIter {
         Self::IntoIter {
             left: 0,
-            width: self.width.clone(),
+            width: self.width,
             top: 0,
-            height: self.height.clone(),
+            height: self.height,
             idx: 0,
             sprite: self,
         }

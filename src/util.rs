@@ -19,12 +19,12 @@ pub fn range_intersection(x1: i32, x2: i32, y1: i32, y2: i32) -> Option<(i32, i3
 /// is 0010, which is returned as 0b00000010.
 pub fn bit_range(value: u8, start: usize, end: usize) -> u8 {
     let right_mask = 0b11111111 >> start;
-    let left_mask = 0b11111111 << 8 - end;
+    let left_mask = 0b11111111 << (8 - end);
     let mask = right_mask & left_mask;
     let masked_val = value & mask;
 
     // shift the masked val
-    masked_val >> 8 - end
+    masked_val >> (8 - end)
 }
 
 /// Find the value w proportion along the line from start to end
@@ -104,6 +104,6 @@ impl Random {
     }
 
     pub fn angle(&mut self) -> f32 {
-        self.float() * 2.0 * 3.141592
+        self.float() * 2.0 * std::f32::consts::PI
     }
 }

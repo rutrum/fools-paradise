@@ -52,6 +52,7 @@ impl Button {
 }
 
 /// Stores the current and previous gamepad and mouse state
+#[derive(Default)]
 pub struct Controls {
     gamepad: u8,
     pressed: u8,
@@ -65,15 +66,7 @@ pub struct Controls {
 impl Controls {
     /// A default, null `Controls`
     pub fn new() -> Self {
-        Self {
-            gamepad: 0,
-            pressed: 0,
-            held: 0,
-
-            mouse_gamepad: 0,
-            mouse_pressed: 0,
-            mouse_held: 0,
-        }
+        Default::default()
     }
 
     /// Reads the current gamepad and mouse buttons state

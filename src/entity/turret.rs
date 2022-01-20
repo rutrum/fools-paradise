@@ -87,10 +87,13 @@ impl Render for Turret {
     fn y_pos(&self) -> f32 { self.pos.1 }
 
     fn sprite(&self) -> Sprite { 
+        /*
         use State::*;
         let idx = match self.state {
             _ => 0,
         };
+        */
+        let idx = 0;
 
         self.sprites[idx]
     }

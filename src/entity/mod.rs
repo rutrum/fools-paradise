@@ -2,7 +2,6 @@ use crate::Sprite;
 use crate::util;
 use crate::color;
 use crate::Cycle;
-use crate::Random;
 
 mod player;
 pub use player::Player;
