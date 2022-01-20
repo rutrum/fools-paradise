@@ -13,7 +13,7 @@ pub enum State {
     DayTransition,
 }
 
-const CYCLE_LENGTH: u32 = 1800;
+const CYCLE_LENGTH: u32 = 1200;
 
 pub struct Game {
     cycle: Cycle,
@@ -106,6 +106,7 @@ impl Game {
                 self.update();
                 self.resolve_collisions();
                 self.cull_entities();
+                self.draw();
             }
             State::NightTransition => {
                 if self.transition_counter >= 60 {
@@ -117,6 +118,8 @@ impl Game {
                     self.state = State::Play;
                     self.cycle = Cycle::Night;
                 }
+                self.draw();
+                self.draw_sun_moon();
             }
             State::DayTransition => {
                 if self.transition_counter >= 60 {
@@ -128,13 +131,34 @@ impl Game {
                     self.state = State::Play;
                     self.cycle = Cycle::Day;
                 }
+                self.draw();
+                self.draw_sun_moon();
             }
         }
-        self.draw();
+    }
+
+    fn draw_sun_moon(&mut self) {
+        let center = (80, 80);
+        let f = self.transition_counter;
+
+        match self.state {
+            State::DayTransition => {
+                color::set_draw(0x20);
+                Sprite::sun.get().draw(center.0 - 4, (center.1 - 15 + f / 8) as i32);
+            }
+            State::NightTransition => {
+                color::set_draw(0x30);
+                Sprite::moon.get().draw(center.0 - 4, (center.1 - 15 + f / 8) as i32);
+            }
+            _ => {}
+        }
+
+        color::set_draw(0x04);
+        Sprite::land.get().draw(center.0 - 16, center.1);
     }
 
     fn resolve_cycle(&mut self) {
-        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 6 * 5 {
+        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 6 * 3 {
             // check if 50 passed seconds
             self.cycle = Cycle::Night;
             self.state = State::NightTransition;
