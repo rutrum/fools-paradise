@@ -13,7 +13,7 @@ pub enum State {
     DayTransition,
 }
 
-const CYCLE_LENGTH: u32 = 3600;
+const CYCLE_LENGTH: u32 = 1800;
 
 pub struct Game {
     cycle: Cycle,
@@ -108,17 +108,25 @@ impl Game {
                 self.cull_entities();
             }
             State::NightTransition => {
-                if self.transition_counter < 0 {
+                if self.transition_counter >= 60 {
+                    Palette::Grey.transition_to(((self.transition_counter - 60) / 15) as usize);
+                } else if self.transition_counter > 0 {
+                    Palette::Night.transition_to((self.transition_counter / 15) as usize);
+                }
+                if self.transition_counter == 0 {
                     self.state = State::Play;
                     self.cycle = Cycle::Night;
-                    Palette::Grey.set();
                 }
             }
             State::DayTransition => {
-                if self.transition_counter < 0 {
+                if self.transition_counter >= 60 {
+                    Palette::Grey.transition_to(((self.transition_counter - 60) / 15) as usize);
+                } else if self.transition_counter > 0 {
+                    Palette::Day.transition_to((self.transition_counter / 15) as usize);
+                }
+                if self.transition_counter == 0 {
                     self.state = State::Play;
                     self.cycle = Cycle::Day;
-                    Palette::Day.set();
                 }
             }
         }
@@ -130,16 +138,14 @@ impl Game {
             // check if 50 passed seconds
             self.cycle = Cycle::Night;
             self.state = State::NightTransition;
-            Palette::Grey.set();
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
         } else if self.cycle_counter % CYCLE_LENGTH == 0 {
             // check if passed 60 seconds
             self.cycle = Cycle::Day;
             self.state = State::DayTransition;
-            Palette::Day.set();
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
         }
-        self.transition_counter = 60;
+        self.transition_counter = 119;
     }
 
     fn score(&self) -> u32 {
