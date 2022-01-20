@@ -42,7 +42,7 @@ impl App {
 
 impl Runtime for App {
     fn start() -> Self {
-        color::Palette::Crimson.set();
+        color::Palette::Day.set();
         App::new()
     }
 

@@ -58,20 +58,41 @@ impl Player {
         self.powerups.push(powerup);
     }
 
+    pub fn has_power_up(&self, powerup: PowerType) -> bool {
+        self.powerups.iter().any(|t| *t == powerup)
+    }
+
     pub fn move_left(&mut self) {
-        self.vel.0 = -2.0;
+        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
+            self.vel.0 = -2.0;
+        } else {
+            self.vel.0 = -1.0;
+        }
     }
 
     pub fn move_right(&mut self) {
-        self.vel.0 = 2.0;
+        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
+            self.vel.0 = 2.0;
+        } else {
+            self.vel.0 = 1.0;
+        }
     }
 
     pub fn move_up(&mut self) {
-        self.vel.1 = -1.0;
+        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
+            self.vel.1 = -1.0;
+        } else {
+            self.vel.1 = -0.5;
+        }
     }
 
     pub fn move_down(&mut self) {
         self.vel.1 = 1.0;
+        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
+            self.vel.1 = 1.0;
+        } else {
+            self.vel.1 = 0.5;
+        }
     }
 }
 

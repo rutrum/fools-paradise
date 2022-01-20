@@ -5,6 +5,7 @@ use crate::Random;
 pub enum PowerType {
     Health,
     Spreader,
+    Speed,
 }
 
 pub struct PowerUp {
@@ -22,9 +23,11 @@ impl PowerUp {
         Self {
             sprites: vec![
                 Sprite::heart,
+                Sprite::spreader,
+                Sprite::speed,
             ],
             pos: (x, -5.0),
-            vel: (-0.5, 1.5),
+            vel: (-0.5, 1.2),
             t,
             collected: false,
             movement_counter: 0,
@@ -40,7 +43,8 @@ impl Render for PowerUp {
         use PowerType::*;
         let idx = match self.t {
             Health => 0,
-            Spreader => 0,
+            Spreader => 1,
+            Speed => 2,
         };
 
         self.sprites[idx]

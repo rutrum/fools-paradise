@@ -6,8 +6,18 @@ pub enum Cycle {
     Night,
 }
 
+pub enum State {
+    Play,
+    EndScreen,
+    NightTransition,
+    DayTransition,
+}
+
+const CYCLE_LENGTH: u32 = 3600;
+
 pub struct Game {
     cycle: Cycle,
+    state: State,
     controls: Controls,
     frame: u32,
     kills: u32,
@@ -25,12 +35,14 @@ pub struct Game {
     spawn_cooldown: i32,
     time_alive: u32,
     cycle_counter: u32,
+    transition_counter: i32,
 }
 
 impl Game {
     pub fn new(random: Random) -> Self {
         Self {
             cycle: Cycle::Day,
+            state: State::Play,
             controls: Controls::new(),
             frame: 0,
             kills: 0,
@@ -48,61 +60,86 @@ impl Game {
             spawn_cooldown: 1,
             time_alive: 0,
             cycle_counter: 0,
+            transition_counter: 0,
         }
     }
 
     /// Runs every frame, calls other functions to make the game function
     pub fn tick(&mut self) {
         self.spawn_cooldown -= 1;
-        self.powerup_cooldown -= 1;
         self.cycle_counter += 1;
         self.controls.next();
         self.frame += 1;
+        self.transition_counter -= 1;
 
-        if !self.player.dead() {
-            self.resolve_controls();
-            color::set_draw(0x02);
-            text(self.score().to_string(), 1, 1);
-
-            text(self.time().to_string(), 1, 11);
-            self.time_alive += 1;
-
-        } else {
-            color::set_draw(0x03);
-            text("Final score:", 20, 50);
-            text(self.score().to_string(), 120, 50);
-            text("Total kills:", 20, 60);
-            text(self.kills.to_string(), 120, 60);
-
-            text("Press action to", 20, 100);
-            text("play again.", 20, 110);
-
-            if self.controls.pressed_or_held(Button::Primary) {
-                *self = Self::new(self.random.clone());
+        // Print UI elements
+        match self.state {
+            State::EndScreen => {
+                color::set_draw(0x03);
+                text("Final score:", 20, 50);
+                text(self.score().to_string(), 120, 50);
+                text("Total kills:", 20, 60);
+                text(self.kills.to_string(), 120, 60);
+                text("Press action to", 20, 100);
+                text("play again.", 20, 110);
+                if self.controls.pressed_or_held(Button::Primary) {
+                    *self = Self::new(self.random.clone());
+                }
+            }
+            _ => {
+                self.resolve_controls();
+                color::set_draw(0x02);
+                text(self.score().to_string(), 1, 1);
+                text(self.time().to_string(), 1, 11);
+                self.time_alive += 1;
             }
         }
 
-        self.resolve_cycle();
-        self.spawn_entities();
-        self.update();
-        self.resolve_collisions();
-        self.cull_entities();
+        // Advance game
+        match self.state {
+            State::Play | State::EndScreen => {
+                if let Cycle::Day = self.cycle {
+                    self.powerup_cooldown -= 1;
+                }
+                self.resolve_cycle();
+                self.spawn_entities();
+                self.update();
+                self.resolve_collisions();
+                self.cull_entities();
+            }
+            State::NightTransition => {
+                if self.transition_counter < 0 {
+                    self.state = State::Play;
+                    self.cycle = Cycle::Night;
+                    Palette::Grey.set();
+                }
+            }
+            State::DayTransition => {
+                if self.transition_counter < 0 {
+                    self.state = State::Play;
+                    self.cycle = Cycle::Day;
+                    Palette::Day.set();
+                }
+            }
+        }
         self.draw();
     }
 
     fn resolve_cycle(&mut self) {
-        if self.cycle_counter % 3600 == 3000 {
+        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 6 * 5 {
             // check if 50 passed seconds
             self.cycle = Cycle::Night;
-            Palette::BlueMold.set();
+            self.state = State::NightTransition;
+            Palette::Grey.set();
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
-
-        } else if self.cycle_counter % 3600 == 0 {
+        } else if self.cycle_counter % CYCLE_LENGTH == 0 {
             // check if passed 60 seconds
             self.cycle = Cycle::Day;
-            Palette::Crimson.set();
+            self.state = State::DayTransition;
+            Palette::Day.set();
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
         }
+        self.transition_counter = 60;
     }
 
     fn score(&self) -> u32 {
@@ -112,6 +149,11 @@ impl Game {
     /// Time in seconds
     fn time(&self) -> u32 {
         self.time_alive / 60
+    }
+
+    /// Round, every 60 seconds
+    fn round(&self) -> u32 {
+        self.time_alive / CYCLE_LENGTH + 1
     }
 
     fn draw(&mut self) {
@@ -194,28 +236,41 @@ impl Game {
                             self.player.power_up(PowerType::Spreader);
                             powerup.collected = true;
                         }
+                        PowerType::Speed => {
+                            self.player.power_up(PowerType::Speed);
+                            powerup.collected = true;
+                        }
                     }
                 }
             }
+        } else if self.player.dead() {
+            self.state = State::EndScreen;
         }
     }
 
     fn spawn_entities(&mut self) {
-        if self.spawn_cooldown <= 0 {
-            let enemy = Blaster::spawn(&mut self.random, self.cycle);
-            self.blasters.push(enemy);
-            self.new_spawn_cooldown();
-        }
 
         if self.spawn_cooldown <= 0 {
-            let enemy = Turret::spawn(&mut self.random);
-            self.turrets.push(enemy);
-            self.new_spawn_cooldown();
+            if self.round() >= 3 && self.random.in_range(0, 5) < 1 {
+                let enemy = Turret::spawn(&mut self.random);
+                self.turrets.push(enemy);
+                self.new_spawn_cooldown();
+            } else {
+                let enemy = Blaster::spawn(&mut self.random, self.cycle);
+                self.blasters.push(enemy);
+                self.new_spawn_cooldown();
+            }
         }
 
         if let Cycle::Day = self.cycle {
             if self.powerup_cooldown <= 0 {
-                let powerup = PowerUp::spawn(&mut self.random, PowerType::Health);
+                let powerup = if self.round() >= 3 && !self.player.has_power_up(PowerType::Speed) {
+                    PowerUp::spawn(&mut self.random, PowerType::Speed)
+                } else if self.round() >= 4 && !self.player.has_power_up(PowerType::Spreader) {
+                    PowerUp::spawn(&mut self.random, PowerType::Spreader)
+                } else {
+                    PowerUp::spawn(&mut self.random, PowerType::Health)
+                };
                 self.powerups.push(powerup);
                 self.powerup_cooldown = 1000;
             }
