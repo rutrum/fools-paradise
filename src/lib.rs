@@ -14,9 +14,10 @@ pub use sprite::*;
 
 mod sound;
 mod color;
+use color::*;
 mod cloud;
 mod game;
-pub use game::Game;
+pub use game::*;
 
 enum GameState {
     Menu,

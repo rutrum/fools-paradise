@@ -4,39 +4,45 @@ use crate::sound;
 use crate::Random;
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum EnemyState {
+pub enum State {
     Stationary,
     Dying,
 }
 
 #[derive(Clone, Debug)]
 pub struct Blaster {
-    pub sprites: Vec<Sprite>,
-    pub state: EnemyState,
-    pub pos: (f32, f32),
-    pub vel: (f32, f32),
-    pub fire_counter: u32,
-    pub death_counter: u32,
+    sprites: Vec<Sprite>,
+    state: State,
+    pos: (f32, f32),
+    vel: (f32, f32),
+    fire_counter: u32,
+    death_counter: u32,
     health: u32,
+    fire_cap: u32,
+    bullet_speed: f32,
 }
 
 impl Blaster {
-    pub fn spawn(random: &mut Random) -> Self {
+    pub fn spawn(random: &mut Random, cycle: Cycle) -> Self {
         let x = random.in_range(8, 160 - 8) as f32;
-        Self {
+        let mut blaster = Self {
             sprites: vec![
                 Sprite::enemy1,
                 Sprite::enemy2,
                 Sprite::enemy3,
                 Sprite::enemy4,
             ],
-            state: EnemyState::Stationary,
+            state: State::Stationary,
             pos: (x, -5.0),
-            vel: (0.0, 1.0),
-            fire_counter: 60,
+            vel: (0.0, 0.0),
+            fire_counter: 30,
             death_counter: 0,
             health: 1,
-        }
+            fire_cap: 0,
+            bullet_speed: 0.0,
+        };
+        blaster.mutate(cycle);
+        blaster
     }
 }
 
@@ -59,23 +65,36 @@ impl Alive for Blaster {
 
     fn kill(&mut self) {
         sound::enemy_death();
-        self.state = EnemyState::Dying;
+        self.state = State::Dying;
         self.death_counter += 1;
+    }
+}
+
+impl CycleDependent for Blaster {
+    fn mutate(&mut self, cycle: Cycle) {
+        if let Cycle::Day = cycle {
+            self.vel.1 = 0.5;
+            self.fire_cap = 120;
+            self.bullet_speed = 1.0;
+        } else {
+            self.vel.1 = 1.0;
+            self.fire_cap = 90;
+            self.bullet_speed = 2.0;
+        }
     }
 }
 
 impl Shoot for Blaster {
     fn shoot(&mut self) -> Vec<Bullet> {
-        if self.fire_counter > 60 {
-
-        sound::enemy_fire();
-        self.fire_counter = 0;
-        let mut bullet = Bullet::new((
-            self.x_pos(),
-            self.bottom() as f32,
-        ));
-        bullet.vel.1 = 2.0;
-        vec![bullet]
+        if self.fire_counter > self.fire_cap {
+            sound::enemy_fire();
+            self.fire_counter = 0;
+            let mut bullet = Bullet::new((
+                self.x_pos(),
+                self.bottom() as f32,
+            ));
+            bullet.vel.1 = self.bullet_speed;
+            vec![ bullet ]
         } else {
             vec![]
         }
@@ -87,7 +106,7 @@ impl Render for Blaster {
     fn y_pos(&self) -> f32 { self.pos.1 }
 
     fn sprite(&self) -> Sprite { 
-        use EnemyState::*;
+        use State::*;
         let idx = match self.state {
             Stationary => 0,
             Dying => match self.death_counter {
@@ -106,6 +125,8 @@ impl Movement for Blaster {
     fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
     fn x_vel(&self) -> f32 { self.vel.0 }
     fn y_vel(&self) -> f32 { self.vel.1 }
+    fn x_vel_mut(&mut self) -> &mut f32 { &mut self.vel.0 }
+    fn y_vel_mut(&mut self) -> &mut f32 { &mut self.vel.1 }
 
     fn update(&mut self, _: u32) { 
         if self.dying() {

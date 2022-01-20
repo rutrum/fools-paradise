@@ -1,6 +1,7 @@
 use crate::Sprite;
 use crate::util;
 use crate::color;
+use crate::Cycle;
 use crate::Random;
 
 mod player;
@@ -18,6 +19,11 @@ pub use blaster::Blaster;
 mod turret;
 pub use turret::Turret;
 
+/// For entities that change during a cycle
+pub trait CycleDependent : Movement {
+    fn mutate(&mut self, cycle: Cycle);
+}
+
 pub trait Movement : Render {
     /// Mutable reference to the true x position.
     fn x_pos_mut(&mut self) -> &mut f32;
@@ -30,6 +36,12 @@ pub trait Movement : Render {
 
     /// Get the y velocity.
     fn y_vel(&self) -> f32;
+
+    /// Mutable reference to the x velocity.
+    fn x_vel_mut(&mut self) -> &mut f32;
+
+    /// Mutable reference to the y velocity.
+    fn y_vel_mut(&mut self) -> &mut f32;
 
     /// Called every frame to update.
     fn update(&mut self, frame: u32);

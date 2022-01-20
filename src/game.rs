@@ -1,6 +1,7 @@
 use crate::*;
 
-enum Cycle {
+#[derive(Clone, Copy)]
+pub enum Cycle {
     Day,
     Night,
 }
@@ -23,6 +24,7 @@ pub struct Game {
     powerup_cooldown: i32,
     spawn_cooldown: i32,
     time_alive: u32,
+    cycle_counter: u32,
 }
 
 impl Game {
@@ -45,6 +47,7 @@ impl Game {
             powerup_cooldown: 1000,
             spawn_cooldown: 1,
             time_alive: 0,
+            cycle_counter: 0,
         }
     }
 
@@ -52,6 +55,7 @@ impl Game {
     pub fn tick(&mut self) {
         self.spawn_cooldown -= 1;
         self.powerup_cooldown -= 1;
+        self.cycle_counter += 1;
         self.controls.next();
         self.frame += 1;
 
@@ -59,6 +63,8 @@ impl Game {
             self.resolve_controls();
             color::set_draw(0x02);
             text(self.score().to_string(), 1, 1);
+
+            text(self.time().to_string(), 1, 11);
             self.time_alive += 1;
 
         } else {
@@ -76,6 +82,7 @@ impl Game {
             }
         }
 
+        self.resolve_cycle();
         self.spawn_entities();
         self.update();
         self.resolve_collisions();
@@ -83,8 +90,28 @@ impl Game {
         self.draw();
     }
 
+    fn resolve_cycle(&mut self) {
+        if self.cycle_counter % 3600 == 3000 {
+            // check if 50 passed seconds
+            self.cycle = Cycle::Night;
+            Palette::BlueMold.set();
+            self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
+
+        } else if self.cycle_counter % 3600 == 0 {
+            // check if passed 60 seconds
+            self.cycle = Cycle::Day;
+            Palette::Crimson.set();
+            self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
+        }
+    }
+
     fn score(&self) -> u32 {
         self.time_alive / 10 + 10 * self.kills
+    }
+    
+    /// Time in seconds
+    fn time(&self) -> u32 {
+        self.time_alive / 60
     }
 
     fn draw(&mut self) {
@@ -175,21 +202,23 @@ impl Game {
 
     fn spawn_entities(&mut self) {
         if self.spawn_cooldown <= 0 {
+            let enemy = Blaster::spawn(&mut self.random, self.cycle);
+            self.blasters.push(enemy);
+            self.new_spawn_cooldown();
+        }
+
+        if self.spawn_cooldown <= 0 {
             let enemy = Turret::spawn(&mut self.random);
             self.turrets.push(enemy);
             self.new_spawn_cooldown();
         }
 
-        if self.spawn_cooldown <= 0 {
-            let enemy = Blaster::spawn(&mut self.random);
-            self.blasters.push(enemy);
-            self.new_spawn_cooldown();
-        }
-
-        if self.powerup_cooldown <= 0 {
-            let powerup = PowerUp::spawn(&mut self.random, PowerType::Health);
-            self.powerups.push(powerup);
-            self.powerup_cooldown = 1000;
+        if let Cycle::Day = self.cycle {
+            if self.powerup_cooldown <= 0 {
+                let powerup = PowerUp::spawn(&mut self.random, PowerType::Health);
+                self.powerups.push(powerup);
+                self.powerup_cooldown = 1000;
+            }
         }
     }
 

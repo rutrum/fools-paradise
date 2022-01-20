@@ -101,6 +101,8 @@ impl Movement for Turret {
     fn y_pos_mut(&mut self) -> &mut f32 { &mut self.pos.1 }
     fn x_vel(&self) -> f32 { self.vel.0 }
     fn y_vel(&self) -> f32 { self.vel.1 }
+    fn x_vel_mut(&mut self) -> &mut f32 { &mut self.vel.0 }
+    fn y_vel_mut(&mut self) -> &mut f32 { &mut self.vel.1 }
 
     fn update(&mut self, _: u32) { 
         if self.y_pos() > self.target_height {
