@@ -34,10 +34,7 @@ pub trait Movement : Render {
     fn vel(&self) -> (f32, f32);
 
     /// Mutable reference to the x velocity.
-    fn x_vel_mut(&mut self) -> &mut f32;
-
-    /// Mutable reference to the y velocity.
-    fn y_vel_mut(&mut self) -> &mut f32;
+    fn vel_mut(&mut self) -> &mut (f32, f32);
 
     /// Called every frame to update.
     fn update(&mut self, frame: u32);

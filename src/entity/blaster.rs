@@ -123,8 +123,7 @@ impl Render for Blaster {
 impl Movement for Blaster {
     fn pos_mut(&mut self) -> &mut (f32, f32) { &mut self.pos }
     fn vel(&self) -> (f32, f32) { self.vel }
-    fn x_vel_mut(&mut self) -> &mut f32 { &mut self.vel.0 }
-    fn y_vel_mut(&mut self) -> &mut f32 { &mut self.vel.1 }
+    fn vel_mut(&mut self) -> &mut (f32, f32) { &mut self.vel }
 
     fn update(&mut self, _: u32) { 
         if self.dying() {
