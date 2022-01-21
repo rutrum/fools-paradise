@@ -27,11 +27,8 @@ pub trait CycleDependent : Movement {
 }
 
 pub trait Movement : Render {
-    /// Mutable reference to the true x position.
-    fn x_pos_mut(&mut self) -> &mut f32;
-
-    /// Mutable reference to the true y position.
-    fn y_pos_mut(&mut self) -> &mut f32;
+    /// Mutable reference to the true position.
+    fn pos_mut(&mut self) -> &mut (f32, f32);
 
     /// Get the x velocity.
     fn x_vel(&self) -> f32;
@@ -51,16 +48,16 @@ pub trait Movement : Render {
     /// Adjusts the position based on the velocity.  Ensures that the x position
     /// doesn't go outside left and right walls of screen.
     fn advance_bounded(&mut self, x_bounded: bool, y_bounded: bool) {
-        *self.x_pos_mut() += self.x_vel();
+        self.pos_mut().0 += self.x_vel();
         if x_bounded {
-            if self.x_pos() > 160.0 { *self.x_pos_mut() = 160.0 }
-            if self.x_pos() < 0.0 { *self.x_pos_mut() = 0.0 }
+            if self.x_pos() > 160.0 { self.pos_mut().0 = 160.0 }
+            if self.x_pos() < 0.0 { self.pos_mut().0 = 0.0 }
         }
 
-        *self.y_pos_mut() += self.y_vel();
+        self.pos_mut().1 += self.y_vel();
         if y_bounded {
-            if self.y_pos() > 160.0 { *self.y_pos_mut() = 160.0 }
-            if self.y_pos() < 0.0 { *self.y_pos_mut() = 0.0 }
+            if self.y_pos() > 160.0 { self.pos_mut().1 = 160.0 }
+            if self.y_pos() < 0.0 { self.pos_mut().1 = 0.0 }
         }
     }
 
