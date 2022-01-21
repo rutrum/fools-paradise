@@ -281,7 +281,7 @@ impl Game {
     fn spawn_entities(&mut self) {
 
         if self.spawn_cooldown <= 0 {
-            if self.round() >= 0 && self.turrets.len() < 3 && self.random.in_range(0, 5) < 1 {
+            if self.round() >= 0 && self.turrets.len() < 3 && self.random.in_range(0, 5) < 5 {
                 let enemy = Turret::spawn(&mut self.random);
                 self.turrets.push(enemy);
                 self.new_spawn_cooldown();

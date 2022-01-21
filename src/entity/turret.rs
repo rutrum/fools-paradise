@@ -18,7 +18,7 @@ pub struct Turret {
     pub state: State,
     pub pos: (f32, f32),
     pub vel: (f32, f32),
-    pub fire_counter: u32,
+    pub fire_counter: i32,
     pub death_counter: u32,
     health: u32,
     target_height: f32,
@@ -44,7 +44,7 @@ impl Turret {
             vel: (0.0, 0.25),
             fire_counter: 0,
             death_counter: 0,
-            health: 2,
+            health: 3,
             target_height: random.in_range(20, 100) as f32,
         }
     }
@@ -76,9 +76,21 @@ impl Alive for Turret {
 
 impl Shoot for Turret {
     fn shoot(&mut self) -> Vec<Bullet> {
-        if self.fire_counter > 120 {
+        if self.health == 1 && self.fire_counter > 60 {
+            // only left gun
             sound::enemy_fire();
-            self.fire_counter = 0;
+            self.state = State::Firing;
+            self.fire_counter = -10;
+            let mut bullet = Bullet::new((
+                self.x_pos() - 4.0,
+                self.bottom() as f32 + 1.0,
+            ));
+            bullet.vel.1 = 1.5;
+            vec![ bullet ]
+        } else if self.fire_counter > 120 {
+            sound::enemy_fire();
+            self.state = State::Firing;
+            self.fire_counter = -10;
             let mut bullet = Bullet::new((
                 self.x_pos() + 4.0,
                 self.bottom() as f32 + 1.0,
@@ -103,16 +115,16 @@ impl Render for Turret {
     fn sprite(&self) -> Sprite { 
         use State::*;
         let idx = match self.state {
-            Moving => 2,
+            Moving => (self.pos.1.abs() / 2.0) as usize % 3,
             Stationary => if self.health == 1 {
                 4
             } else {
                 0
             }
             Firing => if self.health == 1 {
-                3
-            } else {
                 5
+            } else {
+                3
             }
             Dying => if self.death_counter > 30 {
                 8
@@ -136,7 +148,9 @@ impl Movement for Turret {
     fn update(&mut self, _: u32) { 
         if self.y_pos() > self.target_height || self.health == 1 {
             self.vel.1 = 0.0;
-            self.state = State::Stationary;
+            if self.fire_counter > 0 {
+                self.state = State::Stationary;
+            }
         }
         if self.dying() {
             self.death_counter += 1;
