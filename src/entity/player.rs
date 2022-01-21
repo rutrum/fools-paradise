@@ -177,8 +177,7 @@ impl Render for Player {
 
 impl Movement for Player {
     fn pos_mut(&mut self) -> &mut (f32, f32) { &mut self.pos }
-    fn x_vel(&self) -> f32 { self.vel.0 }
-    fn y_vel(&self) -> f32 { self.vel.1 }
+    fn vel(&self) -> (f32, f32) { self.vel }
     fn x_vel_mut(&mut self) -> &mut f32 { &mut self.vel.0 }
     fn y_vel_mut(&mut self) -> &mut f32 { &mut self.vel.1 }
 
@@ -194,11 +193,11 @@ impl Movement for Player {
         }
 
         // update movement counter based on speed
-        if self.x_vel() < 0.0 {
+        if self.vel.0 < 0.0 {
             if self.movement_counter > -TURN_FRAMES {
                 self.movement_counter -= 1;
             }
-        } else if self.x_vel() > 0.0 {
+        } else if self.vel.0 > 0.0 {
             if self.movement_counter < TURN_FRAMES {
                 self.movement_counter += 1;
             }   
