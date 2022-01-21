@@ -90,7 +90,7 @@ impl Shoot for Blaster {
             sound::enemy_fire();
             self.fire_counter = 0;
             let mut bullet = Bullet::new((
-                self.x_pos(),
+                self.pos.0,
                 self.bottom() as f32,
             ));
             bullet.vel.1 = self.bullet_speed;
@@ -102,8 +102,7 @@ impl Shoot for Blaster {
 }
 
 impl Render for Blaster {
-    fn x_pos(&self) -> f32 { self.pos.0 }
-    fn y_pos(&self) -> f32 { self.pos.1 }
+    fn pos(&self) -> (f32, f32) { self.pos }
 
     fn sprite(&self) -> Sprite { 
         use State::*;

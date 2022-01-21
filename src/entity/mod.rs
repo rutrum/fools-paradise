@@ -33,7 +33,7 @@ pub trait Movement : Render {
     /// Get the velocity;
     fn vel(&self) -> (f32, f32);
 
-    /// Mutable reference to the x velocity.
+    /// Mutable reference to the velocity.
     fn vel_mut(&mut self) -> &mut (f32, f32);
 
     /// Called every frame to update.
@@ -44,14 +44,14 @@ pub trait Movement : Render {
     fn advance_bounded(&mut self, x_bounded: bool, y_bounded: bool) {
         self.pos_mut().0 += self.vel().0;
         if x_bounded {
-            if self.x_pos() > 160.0 { self.pos_mut().0 = 160.0 }
-            if self.x_pos() < 0.0 { self.pos_mut().0 = 0.0 }
+            if self.pos().0 > 160.0 { self.pos_mut().0 = 160.0 }
+            if self.pos().0 < 0.0 { self.pos_mut().0 = 0.0 }
         }
 
         self.pos_mut().1 += self.vel().1;
         if y_bounded {
-            if self.y_pos() > 160.0 { self.pos_mut().1 = 160.0 }
-            if self.y_pos() < 0.0 { self.pos_mut().1 = 0.0 }
+            if self.pos().1 > 160.0 { self.pos_mut().1 = 160.0 }
+            if self.pos().1 < 0.0 { self.pos_mut().1 = 0.0 }
         }
     }
 
@@ -67,11 +67,8 @@ pub trait Render {
     /// The sprite to render in the default draw implementation.
     fn sprite(&self) -> Sprite;
 
-    /// Get the true x position (center).
-    fn x_pos(&self) -> f32;
-
-    /// Get the true y position (center).
-    fn y_pos(&self) -> f32;
+    /// Get the true position.
+    fn pos(&self) -> (f32, f32);
 
     /// Get the current width.
     fn width(&self) -> u32 {
@@ -85,7 +82,7 @@ pub trait Render {
 
     /// The left most pixel of the entity.
     fn left(&self) -> i32 {
-        self.x_pos() as i32 - self.width() as i32 / 2
+        self.pos().0 as i32 - self.width() as i32 / 2
     }
 
     /// The right most pixel of the entity.
@@ -95,7 +92,7 @@ pub trait Render {
 
     /// The top most pixel of the entity.
     fn top(&self) -> i32 {
-        self.y_pos() as i32 - self.height() as i32 / 2
+        self.pos().1 as i32 - self.height() as i32 / 2
     }
 
     /// The bottom most pixel of the entity.

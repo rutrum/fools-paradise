@@ -271,21 +271,19 @@ impl Game {
 
         for enemy in self.blasters.iter().filter(|e| e.dead()) {
             if self.is_day() && self.random.uniform_lt(0.1) {
-                let x_pos = enemy.x_pos();
-                let y_pos = enemy.y_pos();
+                let pos = enemy.pos();
                 let pt = self.get_power_type();
 
-                self.powerups.push(PowerUp::spawn(pt, (x_pos, y_pos)));
+                self.powerups.push(PowerUp::spawn(pt, pos));
             }
         }
 
         for enemy in self.turrets.iter().filter(|e| e.dead()) {
             if self.is_day() && self.random.uniform_lt(0.15) {
-                let x_pos = enemy.x_pos();
-                let y_pos = enemy.y_pos();
+                let pos = enemy.pos();
                 let pt = self.get_power_type();
 
-                self.powerups.push(PowerUp::spawn(pt, (x_pos, y_pos)));
+                self.powerups.push(PowerUp::spawn(pt, pos));
             }
         }
 

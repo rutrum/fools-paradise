@@ -119,20 +119,20 @@ impl Shoot for Player {
     fn shoot(&mut self) -> Vec<Bullet> {
         sound::player_fire();
         let mut bullet = Bullet::new((
-            self.x_pos(),
+            self.pos.0,
             self.top() as f32,
         ));
         bullet.vel.1 = -2.0;
         if false {
             sound::player_fire();
             let mut bullet2 = Bullet::new((
-                self.x_pos() - 4.0,
+                self.pos.0 - 4.0,
                 self.top() as f32,
             ));
             bullet2.vel.1 = -2.0;
             bullet2.vel.0 = -0.5;
             let mut bullet3 = Bullet::new((
-                self.x_pos() + 4.0,
+                self.pos.0 + 4.0,
                 self.top() as f32,
             ));
             bullet3.vel.1 = -2.0;
@@ -145,8 +145,7 @@ impl Shoot for Player {
 }
 
 impl Render for Player {
-    fn x_pos(&self) -> f32 { self.pos.0 }
-    fn y_pos(&self) -> f32 { self.pos.1 }
+    fn pos(&self) -> (f32, f32) { self.pos }
 
     fn sprite(&self) -> Sprite { 
         use PlayerState::*;

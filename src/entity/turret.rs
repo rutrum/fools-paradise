@@ -82,7 +82,7 @@ impl Shoot for Turret {
             self.state = State::Firing;
             self.fire_counter = -10;
             let mut bullet = Bullet::new((
-                self.x_pos() - 4.0,
+                self.pos.0 - 4.0,
                 self.bottom() as f32 + 1.0,
             ));
             bullet.vel.1 = 1.5;
@@ -92,12 +92,12 @@ impl Shoot for Turret {
             self.state = State::Firing;
             self.fire_counter = -10;
             let mut bullet = Bullet::new((
-                self.x_pos() + 4.0,
+                self.pos.0 + 4.0,
                 self.bottom() as f32 + 1.0,
             ));
             bullet.vel.1 = 1.5;
             let mut bullet2 = Bullet::new((
-                self.x_pos() - 4.0,
+                self.pos.0 - 4.0,
                 self.bottom() as f32 + 1.0,
             ));
             bullet2.vel.1 = 1.5;
@@ -109,8 +109,7 @@ impl Shoot for Turret {
 }
 
 impl Render for Turret {
-    fn x_pos(&self) -> f32 { self.pos.0 }
-    fn y_pos(&self) -> f32 { self.pos.1 }
+    fn pos(&self) -> (f32, f32) { self.pos }
 
     fn sprite(&self) -> Sprite { 
         use State::*;
@@ -143,7 +142,7 @@ impl Movement for Turret {
     fn vel_mut(&mut self) -> &mut (f32, f32) { &mut self.vel }
 
     fn update(&mut self, _: u32) { 
-        if self.y_pos() > self.target_height || self.health == 1 {
+        if self.pos.1 > self.target_height || self.health == 1 {
             self.vel.1 = 0.0;
             if self.fire_counter > 0 {
                 self.state = State::Stationary;

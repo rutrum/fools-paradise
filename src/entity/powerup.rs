@@ -35,8 +35,7 @@ impl PowerUp {
 }
 
 impl Render for PowerUp {
-    fn x_pos(&self) -> f32 { self.pos.0 }
-    fn y_pos(&self) -> f32 { self.pos.1 }
+    fn pos(&self) -> (f32, f32) { self.pos }
 
     fn sprite(&self) -> Sprite { 
         use PowerType::*;
