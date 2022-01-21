@@ -31,6 +31,7 @@ pub struct Game {
     turrets: Vec<Turret>,
     enemy_bullets: Vec<Bullet>,
 
+    day: u32,
     spawn_cooldown: i32,
     time_alive: u32,
     cycle_counter: u32,
@@ -55,6 +56,7 @@ impl Game {
             turrets: Vec::new(),
             enemy_bullets: Vec::new(),
 
+            day: 1,
             spawn_cooldown: 1,
             time_alive: 0,
             cycle_counter: 0,
@@ -112,6 +114,7 @@ impl Game {
                 if self.transition_counter == 0 {
                     self.state = State::Play;
                     self.cycle = Cycle::Night;
+                    self.day += 1;
                 }
                 self.draw();
                 self.draw_sun_moon();
@@ -139,17 +142,32 @@ impl Game {
         match self.state {
             State::DayTransition => {
                 color::set_draw(0x20);
-                Sprite::sun.get().draw(center.0 - 4, (center.1 - 15 + f / 8) as i32);
+                Sprite::sun.get().draw(center.0 - 4, (center.1 - 10 + f / 10) as i32);
             }
             State::NightTransition => {
                 color::set_draw(0x20);
-                Sprite::moon.get().draw(center.0 - 4, (center.1 - 15 + f / 8) as i32);
+                Sprite::moon.get().draw(center.0 - 4, (center.1 - 10 + f / 10) as i32);
             }
             _ => {}
         }
 
         color::set_draw(0x4320);
         Sprite::land.get().draw(center.0 - 16, center.1);
+
+        match self.cycle {
+            Cycle::Day => {
+                color::set_draw(0x01);
+                text(format!("Day {}", self.day), 58, 95);
+                color::set_draw(0x12);
+                text(format!("Day {}", self.day), 59, 96);
+            }
+            Cycle::Night => {
+                color::set_draw(0x01);
+                text(format!("Night {}", self.day), 52, 95);
+                color::set_draw(0x12);
+                text(format!("Night {}", self.day), 53, 96);
+            }
+        }
     }
 
     fn resolve_cycle(&mut self) {
