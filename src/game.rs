@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, PartialEq, Copy)]
 pub enum Cycle {
     Day,
     Night,
@@ -31,7 +31,6 @@ pub struct Game {
     turrets: Vec<Turret>,
     enemy_bullets: Vec<Bullet>,
 
-    powerup_cooldown: i32,
     spawn_cooldown: i32,
     time_alive: u32,
     cycle_counter: u32,
@@ -56,7 +55,6 @@ impl Game {
             turrets: Vec::new(),
             enemy_bullets: Vec::new(),
 
-            powerup_cooldown: 1000,
             spawn_cooldown: 1,
             time_alive: 0,
             cycle_counter: 0,
@@ -98,9 +96,6 @@ impl Game {
         // Advance game
         match self.state {
             State::Play | State::EndScreen => {
-                if let Cycle::Day = self.cycle {
-                    self.powerup_cooldown -= 1;
-                }
                 self.resolve_cycle();
                 self.spawn_entities();
                 self.update();
@@ -186,6 +181,14 @@ impl Game {
         self.time_alive / CYCLE_LENGTH + 1
     }
 
+    fn is_day(&self) -> bool {
+        self.cycle == Cycle::Day
+    }
+
+    fn is_night(&self) -> bool {
+        self.cycle == Cycle::Night
+    }
+
     fn draw(&mut self) {
         cloud::draw(self.frame, 1.4);
 
@@ -247,6 +250,27 @@ impl Game {
         enemy_collisions(&mut self.player, &mut self.bullets, &mut self.blasters, &mut self.enemy_bullets, &mut self.kills);
         enemy_collisions(&mut self.player, &mut self.bullets, &mut self.turrets, &mut self.enemy_bullets, &mut self.kills);
 
+
+        for enemy in self.blasters.iter().filter(|e| e.dead()) {
+            if self.is_day() && self.random.uniform_lt(0.1) {
+                let x_pos = enemy.x_pos();
+                let y_pos = enemy.y_pos();
+                let pt = self.get_power_type();
+
+                self.powerups.push(PowerUp::spawn(pt, (x_pos, y_pos)));
+            }
+        }
+
+        for enemy in self.turrets.iter().filter(|e| e.dead()) {
+            if self.is_day() && self.random.uniform_lt(0.15) {
+                let x_pos = enemy.x_pos();
+                let y_pos = enemy.y_pos();
+                let pt = self.get_power_type();
+
+                self.powerups.push(PowerUp::spawn(pt, (x_pos, y_pos)));
+            }
+        }
+
         if !self.player.dying() {
             for bullet in &mut self.enemy_bullets {
                 if self.player.collides_with(bullet) {
@@ -257,20 +281,8 @@ impl Game {
 
             for powerup in &mut self.powerups {
                 if self.player.collides_with(powerup) {
-                    match powerup.t {
-                        PowerType::Health => {
-                            self.player.health += 1;
-                            powerup.collected = true;
-                        }
-                        PowerType::Spreader => {
-                            self.player.power_up(PowerType::Spreader);
-                            powerup.collected = true;
-                        }
-                        PowerType::Speed => {
-                            self.player.power_up(PowerType::Speed);
-                            powerup.collected = true;
-                        }
-                    }
+                    self.player.power_up(powerup.t);
+                    powerup.collected = true;
                 }
             }
         } else if self.player.dead() {
@@ -279,9 +291,8 @@ impl Game {
     }
 
     fn spawn_entities(&mut self) {
-
         if self.spawn_cooldown <= 0 {
-            if self.round() >= 0 && self.turrets.len() < 3 && self.random.in_range(0, 5) < 5 {
+            if self.round() >= 3 && self.turrets.len() < 3 && self.random.in_range(0, 5) < 5 {
                 let enemy = Turret::spawn(&mut self.random);
                 self.turrets.push(enemy);
                 self.new_spawn_cooldown();
@@ -291,19 +302,15 @@ impl Game {
                 self.new_spawn_cooldown();
             }
         }
+    }
 
-        if let Cycle::Day = self.cycle {
-            if self.powerup_cooldown <= 0 {
-                let powerup = if self.round() >= 3 && !self.player.has_power_up(PowerType::Speed) {
-                    PowerUp::spawn(&mut self.random, PowerType::Speed)
-                } else if self.round() >= 4 && !self.player.has_power_up(PowerType::Spreader) {
-                    PowerUp::spawn(&mut self.random, PowerType::Spreader)
-                } else {
-                    PowerUp::spawn(&mut self.random, PowerType::Health)
-                };
-                self.powerups.push(powerup);
-                self.powerup_cooldown = 1000;
-            }
+    fn get_power_type(&self) -> PowerType {
+        if self.round() >= 3 && self.player.speed < 1.5 {
+            PowerType::Speed
+        } else if self.round() >= 5 && self.player.speed < 2.0 {
+            PowerType::Speed
+        } else {
+            PowerType::Health
         }
     }
 

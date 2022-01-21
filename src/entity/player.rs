@@ -26,7 +26,7 @@ pub struct Player {
     death_counter: u32,
     invincible_counter: u32,
     pub health: u32,
-    pub powerups: Vec<PowerType>,
+    pub speed: f32,
 }
 
 impl Player {
@@ -50,49 +50,32 @@ impl Player {
             death_counter: 0,
             invincible_counter: 0,
             health: 3,
-            powerups: Vec::new(),
+            speed: 1.0,
         }
     }
     
     pub fn power_up(&mut self, powerup: PowerType) {
-        self.powerups.push(powerup);
-    }
-
-    pub fn has_power_up(&self, powerup: PowerType) -> bool {
-        self.powerups.iter().any(|t| *t == powerup)
+        match powerup {
+            PowerType::Speed => { self.speed += 0.5 }
+            PowerType::Health => { self.health += 1 }
+            _ => {}
+        }
     }
 
     pub fn move_left(&mut self) {
-        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
-            self.vel.0 = -2.0;
-        } else {
-            self.vel.0 = -1.0;
-        }
+        self.vel.0 = -1.0 * self.speed;
     }
 
     pub fn move_right(&mut self) {
-        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
-            self.vel.0 = 2.0;
-        } else {
-            self.vel.0 = 1.0;
-        }
+        self.vel.0 = 1.0 * self.speed;
     }
 
     pub fn move_up(&mut self) {
-        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
-            self.vel.1 = -1.0;
-        } else {
-            self.vel.1 = -0.5;
-        }
+        self.vel.1 = -0.5 * self.speed;
     }
 
     pub fn move_down(&mut self) {
-        self.vel.1 = 1.0;
-        if self.powerups.iter().any(|t| *t == PowerType::Speed) {
-            self.vel.1 = 1.0;
-        } else {
-            self.vel.1 = 0.5;
-        }
+        self.vel.1 = 0.5 * self.speed;
     }
 }
 
@@ -140,7 +123,7 @@ impl Shoot for Player {
             self.top() as f32,
         ));
         bullet.vel.1 = -2.0;
-        if self.powerups.iter().any(|t| *t == PowerType::Spreader) {
+        if false {
             sound::player_fire();
             let mut bullet2 = Bullet::new((
                 self.x_pos() - 4.0,

@@ -1,7 +1,7 @@
 use super::*;
 use crate::Random;
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum PowerType {
     Health,
     Spreader,
@@ -18,16 +18,15 @@ pub struct PowerUp {
 }
 
 impl PowerUp {
-    pub fn spawn(random: &mut Random, t: PowerType) -> Self {
-        let x = random.in_range(20, 160 - 20) as f32;
+    pub fn spawn(t: PowerType, pos: (f32, f32)) -> Self {
         Self {
             sprites: vec![
                 Sprite::heart,
                 Sprite::spreader,
                 Sprite::speed,
             ],
-            pos: (x, -5.0),
-            vel: (-0.5, 1.2),
+            pos,
+            vel: (-0.3, 0.8),
             t,
             collected: false,
             movement_counter: 0,

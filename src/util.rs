@@ -96,7 +96,15 @@ impl Random {
 
     fn float(&mut self) -> f32 {
         self.next();
-        self.v as f32 / u32::MAX as f32
+        let x = self.v as f32 / u32::MAX as f32;
+        assert!(x <= 1.0);
+        x
+    }
+
+    /// Returns if a random float from 0 to 1 is less than or equal to the provided value.
+    /// If `f` is 1 then `uniform_lt` always returns true.
+    pub fn uniform_lt(&mut self, f: f32) -> bool {
+        self.float() <= f
     }
 
     pub fn in_range(&mut self, start: u32, end: u32) -> u32 {
