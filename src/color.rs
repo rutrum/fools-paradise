@@ -16,6 +16,7 @@ impl Palette {
             // Grey Mist: https://lospec.com/palette-list/grey-mist
             Grey => [ 0xf1ffe0, 0x988171, 0x463534, 0x1e1721 ],
 
+            // Some combination of colors I found or made.
             Night => [ 0xd8d7f7, 0x435c6a, 0x252a45, 0x0f0f19 ],
         }
     }

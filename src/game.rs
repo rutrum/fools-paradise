@@ -13,7 +13,7 @@ pub enum State {
     DayTransition,
 }
 
-const CYCLE_LENGTH: u32 = 1200;
+const CYCLE_LENGTH: u32 = 3600;
 
 pub struct Game {
     cycle: Cycle,
@@ -147,18 +147,18 @@ impl Game {
                 Sprite::sun.get().draw(center.0 - 4, (center.1 - 15 + f / 8) as i32);
             }
             State::NightTransition => {
-                color::set_draw(0x30);
+                color::set_draw(0x20);
                 Sprite::moon.get().draw(center.0 - 4, (center.1 - 15 + f / 8) as i32);
             }
             _ => {}
         }
 
-        color::set_draw(0x04);
+        color::set_draw(0x4320);
         Sprite::land.get().draw(center.0 - 16, center.1);
     }
 
     fn resolve_cycle(&mut self) {
-        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 6 * 3 {
+        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 6 * 5 {
             // check if 50 passed seconds
             self.cycle = Cycle::Night;
             self.state = State::NightTransition;
@@ -189,6 +189,7 @@ impl Game {
     fn draw(&mut self) {
         cloud::draw(self.frame, 1.4);
 
+        color::set_draw(0x4320);
         if !self.player.dead() {
             self.player.draw();
         }
@@ -200,7 +201,6 @@ impl Game {
 
         // health
         let heart = Sprite::heart.get();
-        color::set_draw(0x330);
         for x in 0..self.player.health() {
             heart.draw((x * 8 + 10) as i32, 150);
         }
@@ -281,7 +281,7 @@ impl Game {
     fn spawn_entities(&mut self) {
 
         if self.spawn_cooldown <= 0 {
-            if self.round() >= 3 && self.random.in_range(0, 5) < 1 {
+            if self.round() >= 0 && self.turrets.len() < 3 && self.random.in_range(0, 5) < 1 {
                 let enemy = Turret::spawn(&mut self.random);
                 self.turrets.push(enemy);
                 self.new_spawn_cooldown();

@@ -7,6 +7,7 @@ use crate::Random;
 pub enum State {
     Moving,
     Stationary,
+    Firing,
     Dying,
 }
 
@@ -28,11 +29,19 @@ impl Turret {
         let rand_x = random.in_range(20, 140) as f32;
         Self {
             sprites: vec![
-                Sprite::turret,
+                Sprite::turret1,
+                Sprite::turret2,
+                Sprite::turret3,
+                Sprite::turret4,
+                Sprite::turret5,
+                Sprite::turret6,
+                Sprite::turret7,
+                Sprite::turret8,
+                Sprite::turret9,
             ],
-            state: State::Stationary,
+            state: State::Moving,
             pos: (rand_x, -5.0),
-            vel: (0.0, 0.5),
+            vel: (0.0, 0.25),
             fire_counter: 0,
             death_counter: 0,
             health: 2,
@@ -43,7 +52,7 @@ impl Turret {
 
 impl Alive for Turret {
     fn dead(&self) -> bool {
-        self.death_counter > 0
+        self.death_counter >= 40 
     }
 
     fn dying(&self) -> bool {
@@ -71,11 +80,16 @@ impl Shoot for Turret {
             sound::enemy_fire();
             self.fire_counter = 0;
             let mut bullet = Bullet::new((
-                self.x_pos(),
-                self.bottom() as f32,
+                self.x_pos() + 4.0,
+                self.bottom() as f32 + 1.0,
             ));
-            bullet.vel.1 = 2.0;
-            vec![bullet]
+            bullet.vel.1 = 1.5;
+            let mut bullet2 = Bullet::new((
+                self.x_pos() - 4.0,
+                self.bottom() as f32 + 1.0,
+            ));
+            bullet2.vel.1 = 1.5;
+            vec![bullet, bullet2]
         } else {
             vec![]
         }
@@ -87,13 +101,25 @@ impl Render for Turret {
     fn y_pos(&self) -> f32 { self.pos.1 }
 
     fn sprite(&self) -> Sprite { 
-        /*
         use State::*;
         let idx = match self.state {
-            _ => 0,
+            Moving => 2,
+            Stationary => if self.health == 1 {
+                4
+            } else {
+                0
+            }
+            Firing => if self.health == 1 {
+                3
+            } else {
+                5
+            }
+            Dying => if self.death_counter > 30 {
+                8
+            } else {
+                self.death_counter as usize / 10 + 5
+            }
         };
-        */
-        let idx = 0;
 
         self.sprites[idx]
     }
@@ -108,11 +134,13 @@ impl Movement for Turret {
     fn y_vel_mut(&mut self) -> &mut f32 { &mut self.vel.1 }
 
     fn update(&mut self, _: u32) { 
-        if self.y_pos() > self.target_height {
+        if self.y_pos() > self.target_height || self.health == 1 {
             self.vel.1 = 0.0;
+            self.state = State::Stationary;
         }
         if self.dying() {
             self.death_counter += 1;
+            self.state = State::Dying;
         } else {
             self.fire_counter += 1;
         }
