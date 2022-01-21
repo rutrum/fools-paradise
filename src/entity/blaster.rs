@@ -35,7 +35,7 @@ impl Blaster {
             state: State::Stationary,
             pos: (x, -5.0),
             vel: (0.0, 0.0),
-            fire_counter: 30,
+            fire_counter: 90,
             death_counter: 0,
             health: 1,
             fire_cap: 0,
@@ -86,7 +86,7 @@ impl CycleDependent for Blaster {
 
 impl Shoot for Blaster {
     fn shoot(&mut self) -> Vec<Bullet> {
-        if self.fire_counter > self.fire_cap {
+        if self.fire_counter >= self.fire_cap {
             sound::enemy_fire();
             self.fire_counter = 0;
             let mut bullet = Bullet::new((

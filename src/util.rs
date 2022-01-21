@@ -96,9 +96,7 @@ impl Random {
 
     fn float(&mut self) -> f32 {
         self.next();
-        let x = self.v as f32 / u32::MAX as f32;
-        assert!(x <= 1.0);
-        x
+        self.v as f32 / u32::MAX as f32
     }
 
     /// Returns if a random float from 0 to 1 is less than or equal to the provided value.

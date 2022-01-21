@@ -13,7 +13,7 @@ pub enum State {
     DayTransition,
 }
 
-const CYCLE_LENGTH: u32 = 3600;
+const CYCLE_LENGTH: u32 = 1800;
 
 pub struct Game {
     cycle: Cycle,
