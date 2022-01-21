@@ -18,6 +18,9 @@ pub use blaster::Blaster;
 mod turret;
 pub use turret::Turret;
 
+mod enemy;
+pub use enemy::*;
+
 /// For entities that change during a cycle
 pub trait CycleDependent : Movement {
     fn mutate(&mut self, cycle: Cycle);

@@ -75,7 +75,7 @@ impl CycleDependent for Blaster {
         if let Cycle::Day = cycle {
             self.vel.1 = 0.5;
             self.fire_cap = 120;
-            self.bullet_speed = 1.0;
+            self.bullet_speed = 1.2;
         } else {
             self.vel.1 = 1.0;
             self.fire_cap = 90;
