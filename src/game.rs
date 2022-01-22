@@ -176,11 +176,13 @@ impl Game {
             self.cycle = Cycle::Night;
             self.state = State::NightTransition;
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
+            self.turrets.iter_mut().for_each(|b| b.mutate(self.cycle));
         } else if self.cycle_counter % CYCLE_LENGTH == 0 {
             // check if passed 60 seconds
             self.cycle = Cycle::Day;
             self.state = State::DayTransition;
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
+            self.turrets.iter_mut().for_each(|b| b.mutate(self.cycle));
         }
         self.transition_counter = 119;
     }
@@ -195,8 +197,8 @@ impl Game {
     }
 
     /// Round, every 60 seconds
-    fn round(&self) -> u32 {
-        self.time_alive / CYCLE_LENGTH + 1
+    fn round(&self) -> i32 {
+        self.time_alive as i32 / CYCLE_LENGTH as i32 + 1
     }
 
     fn is_day(&self) -> bool {
@@ -274,7 +276,9 @@ impl Game {
                 let pos = enemy.pos();
                 let pt = self.get_power_type();
 
-                self.powerups.push(PowerUp::spawn(pt, pos));
+                if let Some(pt) = pt {
+                    self.powerups.push(PowerUp::spawn(pt, pos));
+                }
             }
         }
 
@@ -283,7 +287,9 @@ impl Game {
                 let pos = enemy.pos();
                 let pt = self.get_power_type();
 
-                self.powerups.push(PowerUp::spawn(pt, pos));
+                if let Some(pt) = pt {
+                    self.powerups.push(PowerUp::spawn(pt, pos));
+                }
             }
         }
 
@@ -308,7 +314,7 @@ impl Game {
 
     fn spawn_entities(&mut self) {
         if self.spawn_cooldown <= 0 {
-            if self.round() >= 3 && self.turrets.len() < 3 && self.random.in_range(0, 5) < 5 {
+            if self.round() >= 3 && self.turrets.len() < 3 && self.random.in_range(0, (10 - self.round()).max(3) as u32) < 1 {
                 let enemy = Turret::spawn(&mut self.random);
                 self.turrets.push(enemy);
                 self.new_spawn_cooldown();
@@ -320,21 +326,23 @@ impl Game {
         }
     }
 
-    fn get_power_type(&self) -> PowerType {
+    fn get_power_type(&self) -> Option<PowerType> {
         if self.round() >= 3 && self.player.speed < 1.5 {
-            PowerType::Speed
+            Some(PowerType::Speed)
         } else if self.round() >= 5 && self.player.speed < 2.0 {
-            PowerType::Speed
+            Some(PowerType::Speed)
+        } else if self.player.health < 5 {
+            Some(PowerType::Health)
         } else {
-            PowerType::Health
+            None
         }
     }
 
     fn new_spawn_cooldown(&mut self) {
-        self.spawn_cooldown = if self.frame > 60 * (100 - 30) {
+        self.spawn_cooldown = if self.frame > 180 * (100 - 30) {
             30
         } else {
-            100 - self.frame as i32 / 60
+            100 - self.frame as i32 / 180
         };
     }
 

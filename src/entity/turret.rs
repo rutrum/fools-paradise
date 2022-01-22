@@ -11,6 +11,13 @@ pub enum State {
     Dying,
 }
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum ShootState {
+    Single,
+    First,
+    Second,
+}
+
 /// Moves into position and then continues fire
 #[derive(Clone, Debug)]
 pub struct Turret {
@@ -20,6 +27,7 @@ pub struct Turret {
     pub vel: (f32, f32),
     pub fire_counter: i32,
     pub death_counter: u32,
+    shoot_state: ShootState,
     health: u32,
     target_height: f32,
 }
@@ -45,7 +53,30 @@ impl Turret {
             fire_counter: 0,
             death_counter: 0,
             health: 3,
+            shoot_state: ShootState::Single,
             target_height: random.in_range(20, 100) as f32,
+        }
+    }
+
+    fn fire_cap(&self) -> i32 {
+        use ShootState::*;
+        match (self.shoot_state, self.health) {
+            (Single, 1) => 60,
+            (First, 1) => 5,
+            (Second, 1) => 30,
+
+            (Single, _) => 120,
+            (First, _) => 5,
+            (Second, _) => 60,
+        }
+    }
+}
+
+impl CycleDependent for Turret {
+    fn mutate(&mut self, cycle: Cycle) {
+        match cycle {
+            Cycle::Day => self.shoot_state = ShootState::Single,
+            Cycle::Night => self.shoot_state = ShootState::First,
         }
     }
 }
@@ -76,32 +107,32 @@ impl Alive for Turret {
 
 impl Shoot for Turret {
     fn shoot(&mut self) -> Vec<Bullet> {
-        if self.health == 1 && self.fire_counter > 60 {
-            // only left gun
+        use ShootState::*;
+        if self.fire_counter > self.fire_cap() {
             sound::enemy_fire();
             self.state = State::Firing;
             self.fire_counter = -10;
-            let mut bullet = Bullet::new((
+            self.shoot_state = match self.shoot_state {
+                First => Second,
+                Second => First,
+                Single => Single,
+            };
+
+            let mut bullets = vec![Bullet::new((
                 self.pos.0 - 4.0,
                 self.bottom() as f32 + 1.0,
-            ));
-            bullet.vel.1 = 1.5;
-            vec![ bullet ]
-        } else if self.fire_counter > 120 {
-            sound::enemy_fire();
-            self.state = State::Firing;
-            self.fire_counter = -10;
-            let mut bullet = Bullet::new((
-                self.pos.0 + 4.0,
-                self.bottom() as f32 + 1.0,
-            ));
-            bullet.vel.1 = 1.5;
-            let mut bullet2 = Bullet::new((
-                self.pos.0 - 4.0,
-                self.bottom() as f32 + 1.0,
-            ));
-            bullet2.vel.1 = 1.5;
-            vec![bullet, bullet2]
+            ))];
+            
+            if self.health > 1 {
+                bullets.push(Bullet::new((
+                    self.pos.0 + 4.0,
+                    self.bottom() as f32 + 1.0,
+                )));
+            }
+
+            bullets.iter_mut().for_each(|b| b.vel.1 = 1.5);
+
+            bullets
         } else {
             vec![]
         }
