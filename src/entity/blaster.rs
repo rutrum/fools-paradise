@@ -23,8 +23,15 @@ pub struct Blaster {
 }
 
 impl Blaster {
-    pub fn spawn(random: &mut Random, cycle: Cycle) -> Self {
-        let x = random.in_range(8, 160 - 8) as f32;
+    pub fn spawn(random: &mut Random, cycle: Cycle, player: &Player) -> Self {
+        let x = if let Cycle::Day = cycle {
+            random.in_range(6, 160 - 6) as f32
+        } else {
+            random.in_range(
+                6.max(player.pos.0 as i32 - 40) as u32,
+                (160 - 6).min(player.pos.0 as i32 + 40) as u32,
+            ) as f32
+        };
         let mut blaster = Self {
             sprites: vec![
                 Sprite::enemy1,

@@ -3,11 +3,14 @@ use crate::Sprite;
 use crate::sound;
 use crate::Random;
 
+const STILL_CAP: u32 = 300;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum State {
     Moving,
     Stationary,
     Firing,
+    Leaving,
     Dying,
 }
 
@@ -27,6 +30,7 @@ pub struct Turret {
     pub vel: (f32, f32),
     pub fire_counter: i32,
     pub death_counter: u32,
+    still_counter: u32,
     shoot_state: ShootState,
     health: u32,
     target_height: f32,
@@ -49,12 +53,13 @@ impl Turret {
             ],
             state: State::Moving,
             pos: (rand_x, -5.0),
-            vel: (0.0, 0.25),
+            vel: (0.0, 0.4),
             fire_counter: 0,
             death_counter: 0,
-            health: 3,
+            still_counter: 0,
+            health: 4,
             shoot_state: ShootState::Single,
-            target_height: random.in_range(20, 100) as f32,
+            target_height: random.in_range(20, 60) as f32,
         }
     }
 
@@ -108,6 +113,9 @@ impl Alive for Turret {
 impl Shoot for Turret {
     fn shoot(&mut self) -> Vec<Bullet> {
         use ShootState::*;
+        if self.state == State::Leaving {
+            return vec![];
+        }
         if self.fire_counter > self.fire_cap() {
             sound::enemy_fire();
             self.state = State::Firing;
@@ -123,7 +131,7 @@ impl Shoot for Turret {
                 self.bottom() as f32 + 1.0,
             ))];
             
-            if self.health > 1 {
+            if self.health > 2 {
                 bullets.push(Bullet::new((
                     self.pos.0 + 4.0,
                     self.bottom() as f32 + 1.0,
@@ -145,13 +153,13 @@ impl Render for Turret {
     fn sprite(&self) -> Sprite { 
         use State::*;
         let idx = match self.state {
-            Moving => (self.pos.1.abs() / 2.0) as usize % 3,
-            Stationary => if self.health == 1 {
+            Moving | Leaving => (self.pos.1.abs() / 2.0) as usize % 3,
+            Stationary => if self.health <= 2 {
                 4
             } else {
                 0
             }
-            Firing => if self.health == 1 {
+            Firing => if self.health <= 2 {
                 5
             } else {
                 3
@@ -173,12 +181,21 @@ impl Movement for Turret {
     fn vel_mut(&mut self) -> &mut (f32, f32) { &mut self.vel }
 
     fn update(&mut self, _: u32) { 
-        if self.pos.1 > self.target_height || self.health == 1 {
+        if self.health <= 2 || (self.pos.1 > self.target_height && self.still_counter < STILL_CAP) {
             self.vel.1 = 0.0;
             if self.fire_counter > 0 {
                 self.state = State::Stationary;
             }
         }
+
+        if self.health > 2 && self.pos.1 > self.target_height {
+            self.still_counter += 1;
+            if self.still_counter >= STILL_CAP {
+                self.state = State::Leaving;
+                self.vel.1 = 2.0;
+            }
+        }
+
         if self.dying() {
             self.death_counter += 1;
             self.state = State::Dying;

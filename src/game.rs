@@ -175,8 +175,8 @@ impl Game {
     }
 
     fn resolve_cycle(&mut self) {
-        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 6 * 5 {
-            // check if 50 passed seconds
+        if self.cycle_counter % CYCLE_LENGTH == CYCLE_LENGTH / 4 * 3 {
+            // check if 45 passed seconds
             self.cycle = Cycle::Night;
             self.state = State::NightTransition;
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
@@ -323,7 +323,7 @@ impl Game {
                 self.turrets.push(enemy);
                 self.new_spawn_cooldown();
             } else {
-                let enemy = Blaster::spawn(&mut self.random, self.cycle);
+                let enemy = Blaster::spawn(&mut self.random, self.cycle, &self.player);
                 self.blasters.push(enemy);
                 self.new_spawn_cooldown();
             }
