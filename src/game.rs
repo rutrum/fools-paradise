@@ -13,7 +13,7 @@ pub enum State {
     DayTransition,
 }
 
-const CYCLE_LENGTH: u32 = 1800;
+const CYCLE_LENGTH: u32 = 3600;
 
 pub struct Game {
     cycle: Cycle,
@@ -40,9 +40,10 @@ pub struct Game {
 
 impl Game {
     pub fn new(random: Random) -> Self {
+        Palette::Grey.set();
         Self {
             cycle: Cycle::Day,
-            state: State::Play,
+            state: State::DayTransition,
             controls: Controls::new(),
             frame: 0,
             kills: 0,
@@ -60,7 +61,7 @@ impl Game {
             spawn_cooldown: 1,
             time_alive: 0,
             cycle_counter: 0,
-            transition_counter: 0,
+            transition_counter: 60,
         }
     }
 
@@ -68,9 +69,11 @@ impl Game {
     pub fn tick(&mut self) {
         self.spawn_cooldown -= 1;
         self.cycle_counter += 1;
-        self.controls.next();
-        self.frame += 1;
         self.transition_counter -= 1;
+
+        if let State::Play | State::EndScreen = self.state {
+            self.controls.next();
+        }
 
         // Print UI elements
         match self.state {
@@ -98,6 +101,7 @@ impl Game {
         // Advance game
         match self.state {
             State::Play | State::EndScreen => {
+                self.frame += 1;
                 self.resolve_cycle();
                 self.spawn_entities();
                 self.update();
@@ -339,10 +343,15 @@ impl Game {
     }
 
     fn new_spawn_cooldown(&mut self) {
-        self.spawn_cooldown = if self.frame > 180 * (100 - 30) {
+        let cooldown = if self.frame > 300 * (100 - 30) {
             30
         } else {
-            100 - self.frame as i32 / 180
+            100 - self.frame as i32 / 300
+        };
+
+        self.spawn_cooldown = match self.cycle {
+            Cycle::Day => cooldown,
+            Cycle::Night => cooldown / 4 * 3,
         };
     }
 

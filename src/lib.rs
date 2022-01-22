@@ -74,6 +74,7 @@ fn menu_update(game: &mut App) {
     }
 
     if game.controls.pressed(Button::Primary) {
+        game.controls.next();  // stop from firing first shot in game
         game.state = GameState::Playing(Game::new(Random::seed(game.frame)));
     }
 }
