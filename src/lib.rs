@@ -65,6 +65,7 @@ fn menu_update(game: &mut App) {
     color::set_draw(0x03);
     text("Fool's Paradise", 10, 10);
     text("Start", 10, 130);
+    text("v0.2.0", 160-6*8, 152);
 
     let s = Sprite::enemy1.get();
 

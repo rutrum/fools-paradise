@@ -10,7 +10,7 @@ checksum = "8ff9f338986406db85e2b5deb40a9255b796ca03a194c7457403d215173f3fd5"
 
 [[package]]
 name = "cart"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "buddy-alloc",
 ]
