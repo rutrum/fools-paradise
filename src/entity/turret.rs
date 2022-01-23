@@ -153,7 +153,11 @@ impl Render for Turret {
     fn sprite(&self) -> Sprite { 
         use State::*;
         let idx = match self.state {
-            Moving | Leaving => (self.pos.1.abs() / 2.0) as usize % 3,
+            Moving | Leaving => if self.health > 2 {
+                (self.pos.1.abs() / 2.0) as usize % 3
+            } else {
+                4
+            }
             Stationary => if self.health <= 2 {
                 4
             } else {
@@ -188,11 +192,15 @@ impl Movement for Turret {
             }
         }
 
-        if self.health > 2 && self.pos.1 > self.target_height {
+        if self.pos.1 > self.target_height {
             self.still_counter += 1;
             if self.still_counter >= STILL_CAP {
                 self.state = State::Leaving;
-                self.vel.1 = 2.0;
+                if self.health > 2 {
+                    self.vel.1 = 2.0;
+                } else {
+                    self.vel.1 = 1.5;
+                }
             }
         }
 

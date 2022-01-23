@@ -68,7 +68,6 @@ impl Game {
     /// Runs every frame, calls other functions to make the game function
     pub fn tick(&mut self) {
         self.spawn_cooldown -= 1;
-        self.cycle_counter += 1;
         self.transition_counter -= 1;
 
         if let State::Play | State::EndScreen = self.state {
@@ -79,6 +78,16 @@ impl Game {
         match self.state {
             State::EndScreen => {
                 color::set_draw(0x03);
+
+                match self.cycle {
+                    Cycle::Day => {
+                        text(format!("Day {}", self.day), 30, 30);
+                    }
+                    Cycle::Night => {
+                        text(format!("Night {}", self.day), 30, 30);
+                    }
+                }
+
                 text("Final score:", 20, 50);
                 text(self.score().to_string(), 120, 50);
                 text("Total kills:", 20, 60);
@@ -90,12 +99,25 @@ impl Game {
                 }
             }
             _ => {
+                self.cycle_counter += 1;
                 self.resolve_controls();
                 color::set_draw(0x02);
-                text(self.score().to_string(), 1, 1);
-                text(self.time().to_string(), 1, 11);
-                self.time_alive += 1;
+                if self.time_alive > 0 {
+                    text(self.score().to_string(), 1, 1);
+                    match self.cycle {
+                        Cycle::Day => {
+                            text(format!("Day {}", self.day), 1, 11);
+                        }
+                        Cycle::Night => {
+                            text(format!("Night {}", self.day), 1, 11);
+                        }
+                    }
+                }
             }
+        }
+
+        if let State::Play = self.state {
+            self.time_alive += 1;
         }
 
         // Advance game
@@ -118,7 +140,6 @@ impl Game {
                 if self.transition_counter == 0 {
                     self.state = State::Play;
                     self.cycle = Cycle::Night;
-                    self.day += 1;
                 }
                 self.draw();
                 self.draw_sun_moon();
@@ -185,6 +206,7 @@ impl Game {
             // check if passed 60 seconds
             self.cycle = Cycle::Day;
             self.state = State::DayTransition;
+            self.day += 1;
             self.blasters.iter_mut().for_each(|b| b.mutate(self.cycle));
             self.turrets.iter_mut().for_each(|b| b.mutate(self.cycle));
         }
@@ -282,7 +304,7 @@ impl Game {
 
 
         for enemy in self.blasters.iter().filter(|e| e.dead()) {
-            let p = 0.3 - 0.05 * self.player.health() as f32;
+            let p = 0.15 - 0.03 * self.player.health() as f32;
             if self.is_day() && self.random.uniform_lt(p) {
                 let pos = enemy.pos();
                 let pt = self.get_power_type();
@@ -294,7 +316,7 @@ impl Game {
         }
 
         for enemy in self.turrets.iter().filter(|e| e.dead()) {
-            let p = 0.35 - 0.05 * self.player.health() as f32;
+            let p = 0.18 - 0.03 * self.player.health() as f32;
             if self.is_day() && self.random.uniform_lt(p) {
                 let pos = enemy.pos();
                 let pt = self.get_power_type();
@@ -326,7 +348,7 @@ impl Game {
 
     fn spawn_entities(&mut self) {
         if self.spawn_cooldown <= 0 {
-            if self.round() >= 3 && self.turrets.len() < 3 && self.random.in_range(0, (10 - self.round()).max(3) as u32) < 1 {
+            if self.round() >= 0 && self.turrets.len() < 3 && self.random.in_range(0, (10 - self.round()).max(3) as u32) < 1 {
                 let enemy = Turret::spawn(&mut self.random);
                 self.turrets.push(enemy);
                 self.new_spawn_cooldown();
