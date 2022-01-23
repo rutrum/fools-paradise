@@ -231,6 +231,12 @@ impl Game {
         for x in 0..self.player.health() {
             heart.draw((x * 8 + 10) as i32, 150);
         }
+
+        // speed boosts
+        let speedup = Sprite::speed.get();
+        for x in 0..self.player.total_speed_powerups() {
+            speedup.draw((x * 8 + 10) as i32, 140);
+        }
     }
 
     fn cull_entities(&mut self) {
@@ -276,7 +282,8 @@ impl Game {
 
 
         for enemy in self.blasters.iter().filter(|e| e.dead()) {
-            if self.is_day() && self.random.uniform_lt(0.1) {
+            let p = 0.3 - 0.05 * self.player.health() as f32;
+            if self.is_day() && self.random.uniform_lt(p) {
                 let pos = enemy.pos();
                 let pt = self.get_power_type();
 
@@ -287,7 +294,8 @@ impl Game {
         }
 
         for enemy in self.turrets.iter().filter(|e| e.dead()) {
-            if self.is_day() && self.random.uniform_lt(0.15) {
+            let p = 0.35 - 0.05 * self.player.health() as f32;
+            if self.is_day() && self.random.uniform_lt(p) {
                 let pos = enemy.pos();
                 let pt = self.get_power_type();
 

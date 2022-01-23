@@ -77,6 +77,14 @@ impl Player {
     pub fn move_down(&mut self) {
         self.vel.1 = 0.5 * self.speed;
     }
+
+    pub fn total_speed_powerups(&self) -> u32 {
+        match self.speed {
+            1.5 => 1,
+            2.0 => 2,
+            _ => 0,
+        }
+    }
 }
 
 impl Alive for Player {
